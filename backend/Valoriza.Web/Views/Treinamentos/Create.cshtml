@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Nova Trilha";
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+<div class="card p-4 col-md-8">
+    <h3 class="h5 mb-3">Cadastrar trilha de treinamento</h3>
+    <form method="post" asp-action="Create">
+        <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input type="text" name="titulo" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Descrição</label>
+            <textarea name="descricao" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Carga horária (min)</label>
+                <input type="number" name="cargaHoraria" class="form-control" value="60" min="1" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Nível</label>
+                <select name="nivel" class="form-select">
+                    <option>Básico</option>
+                    <option>Intermediário</option>
+                    <option>Avançado</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Empresa ID</label>
+                <input type="number" name="empresaId" class="form-control" value="1" min="1" />
+            </div>
+        </div>
+        <button type="submit" class="btn btn-dark">Salvar</button>
+    </form>
+</div>

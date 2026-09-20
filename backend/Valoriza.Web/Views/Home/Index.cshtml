@@ -1,0 +1,65 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="p-4 mb-4 bg-white rounded-3">
+    <h1 class="h3 mb-1">Painel Valoriza</h1>
+    <p class="text-muted mb-0">Gestão de Diversidade, Equidade e Inclusão Organizacional</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="text-muted small">Denúncias</div>
+            <div class="fs-3 fw-bold">@ViewBag.TotalDenuncias</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="text-muted small">Abertas</div>
+            <div class="fs-3 fw-bold text-warning">@ViewBag.DenunciasAbertas</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="text-muted small">Trilhas ativas</div>
+            <div class="fs-3 fw-bold">@ViewBag.TotalTrilhas</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="text-muted small">Usuários ativos</div>
+            <div class="fs-3 fw-bold">@ViewBag.TotalUsuarios</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Canal de Denúncias</h5>
+                <p class="card-text text-muted">Acompanhe e gerencie denúncias de forma confidencial.</p>
+                <a asp-controller="Denuncias" asp-action="Index" class="btn btn-dark btn-sm">Abrir</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Treinamentos</h5>
+                <p class="card-text text-muted">Trilhas de capacitação em DEI e relações étnico-raciais.</p>
+                <a asp-controller="Treinamentos" asp-action="Index" class="btn btn-dark btn-sm">Abrir</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">API / Swagger</h5>
+                <p class="card-text text-muted">Documentação e testes dos endpoints REST.</p>
+                <span class="text-muted small">Rode a API e acesse /swagger</span>
+            </div>
+        </div>
+    </div>
+</div>

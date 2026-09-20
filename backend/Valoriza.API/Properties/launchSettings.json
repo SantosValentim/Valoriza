@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Valoriza.API": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://*:5124;https://*:7001"
+    }
+  }
+}

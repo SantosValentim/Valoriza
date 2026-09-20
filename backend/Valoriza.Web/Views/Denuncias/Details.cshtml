@@ -1,0 +1,50 @@
+@model Valoriza.API.Models.Denuncia
+@{
+    ViewData["Title"] = "Detalhes da Denúncia";
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+<div class="card p-4">
+    <h3 class="h5">Protocolo: @Model.Protocolo</h3>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">Tipo</dt>
+        <dd class="col-sm-9">@Model.Tipo</dd>
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">@Model.Status</dd>
+        <dt class="col-sm-3">Data</dt>
+        <dd class="col-sm-9">@Model.DataRegistro.ToString("dd/MM/yyyy HH:mm")</dd>
+        <dt class="col-sm-3">Anônima</dt>
+        <dd class="col-sm-9">@(Model.Anonima ? "Sim" : "Não")</dd>
+        <dt class="col-sm-3">Relato</dt>
+        <dd class="col-sm-9">@Model.Relato</dd>
+        @if (!string.IsNullOrEmpty(Model.ObservacoesInternas))
+        {
+            <dt class="col-sm-3">Observações</dt>
+            <dd class="col-sm-9">@Model.ObservacoesInternas</dd>
+        }
+    </dl>
+
+    <hr />
+    <h5 class="h6">Atualizar status</h5>
+    <form asp-action="AtualizarStatus" method="post" class="row g-2">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <div class="col-md-4">
+            <select name="status" class="form-select">
+                <option value="Aberta">Aberta</option>
+                <option value="EmAnalise">Em Análise</option>
+                <option value="Resolvida">Resolvida</option>
+                <option value="Arquivada">Arquivada</option>
+            </select>
+        </div>
+        <div class="col-md-5">
+            <input type="text" name="observacoes" class="form-control" placeholder="Observações internas" />
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-dark w-100">Salvar</button>
+        </div>
+    </form>
+</div>

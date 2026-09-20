@@ -1,0 +1,47 @@
+@model List<Valoriza.API.Models.Denuncia>
+@{
+    ViewData["Title"] = "Denúncias";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Canal de Denúncias</h2>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Protocolo</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                    <th>Anônima</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model == null || !Model.Any())
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">Nenhuma denúncia registrada.</td></tr>
+            }
+            else
+            {
+                foreach (var d in Model)
+                {
+                    <tr>
+                        <td>@d.Protocolo</td>
+                        <td>@d.Tipo</td>
+                        <td><span class="badge bg-secondary">@d.Status</span></td>
+                        <td>@d.DataRegistro.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@(d.Anonima ? "Sim" : "Não")</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@d.Id" class="btn btn-sm btn-outline-dark">Detalhes</a>
+                        </td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
