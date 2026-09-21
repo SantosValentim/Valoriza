@@ -1,3 +1,6 @@
+/*  VALORIZA API – Ponto de entrada
+   .NET 10 | JWT | Identity | Swagger */
+
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -11,9 +14,11 @@ using Valoriza.API.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// BANCO (SQL Server)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// IDENTITY
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -26,8 +31,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var jwtKey = jwtSettings["Key"]!;
+// ---------- JWT ----------
+var jwt = builder.Configuration.GetSection("Jwt");
+var key = jwt["Key"]!;
 
 builder.Services.AddAuthentication(options =>
 {
@@ -39,32 +45,27 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidIssuer = jwtSettings["Issuer"],
+        ValidIssuer = jwt["Issuer"],
         ValidateAudience = true,
-        ValidAudience = jwtSettings["Audience"],
+        ValidAudience = jwt["Audience"],
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
         ClockSkew = TimeSpan.Zero
     };
 });
 
 builder.Services.AddAuthorization();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-});
+builder.Services.AddCors(o => o.AddPolicy("AllowAll",
+    p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
+// Filtros globais de validação e exceção
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
     options.Filters.Add<GlobalExceptionFilter>();
 });
-
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.SuppressModelStateInvalidFilter = true;
-});
+builder.Services.Configure<ApiBehaviorOptions>(o => o.SuppressModelStateInvalidFilter = true);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -81,7 +82,10 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
             Array.Empty<string>()
         }
     });
@@ -89,44 +93,44 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// SEED DE PAPÉIS + ADMIN
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    // Cria os papéis
+    // Papéis do sistema
     foreach (var role in new[] { "AdminValoriza", "AdminEmpresa", "GestorDEI", "Colaborador" })
     {
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
     }
 
-    // Cria seu usuário administrador (só se ainda não existir)
-    var email = "oliver@valoriza.com";
-    var usuarioExistente = await userManager.FindByEmailAsync(email);
+    // Admin inicial
+    var seed = builder.Configuration.GetSection("SeedAdmin");
+    var email = seed["Email"] ?? "admin@valoriza.local";
+    var senha = seed["Senha"] ?? "Trocar@123";
+    var nome = seed["Nome"] ?? "Administrador";
 
-    if (usuarioExistente == null)
+    if (await userManager.FindByEmailAsync(email) == null)
     {
         var admin = new ApplicationUser
         {
             UserName = email,
             Email = email,
-            NomeCompleto = "Oliver Valentim Carvalho Santos",
+            NomeCompleto = nome,
             EmailConfirmed = true,
             Ativo = true,
             DataCadastro = DateTime.UtcNow
         };
 
-        var resultado = await userManager.CreateAsync(admin, "Senha@123");
-
-        if (resultado.Succeeded)
-        {
+        var result = await userManager.CreateAsync(admin, senha);
+        if (result.Succeeded)
             await userManager.AddToRoleAsync(admin, "AdminValoriza");
-            Console.WriteLine("Usuário admin criado: oliver@valoriza.com / Senha@123");
-        }
     }
 }
 
+// Swagger sempre ativo
 app.UseSwagger();
 app.UseSwaggerUI();
 

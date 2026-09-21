@@ -1,7 +1,4 @@
-/* ============================================================
-   AuthController – Login e geração de JWT
-   Autor: Oliver Valentim Carvalho Santos - RA 2632071
-   ============================================================ */
+/* Login e geração de token JWT */
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -28,6 +25,7 @@ namespace Valoriza.API.Controllers
             _config = config;
         }
 
+        /// <summary> Realiza login e devolve token JWT + dados do usuário </summary>
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO request)
@@ -37,8 +35,7 @@ namespace Valoriza.API.Controllers
             if (user is null || !user.Ativo)
                 return Unauthorized(ApiErrorResponse.Criar("Credenciais inválidas ou usuário inativo.", "AUTH_001"));
 
-            var senhaValida = await _userManager.CheckPasswordAsync(user, request.Senha);
-            if (!senhaValida)
+            if (!await _userManager.CheckPasswordAsync(user, request.Senha))
                 return Unauthorized(ApiErrorResponse.Criar("Credenciais inválidas.", "AUTH_002"));
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -63,6 +60,7 @@ namespace Valoriza.API.Controllers
             return Ok(ApiResponse<LoginResponseDTO>.Ok(response, "Login realizado com sucesso."));
         }
 
+        // Monta o JWT com claims de id, e-mail, nome, empresa e papéis
         private string GerarToken(ApplicationUser user, IList<string> roles)
         {
             var claims = new List<Claim>
@@ -77,16 +75,16 @@ namespace Valoriza.API.Controllers
                 claims.Add(new Claim(ClaimTypes.Role, role));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-            var credenciais = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
+            var jwt = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(double.Parse(_config["Jwt:ExpireHours"] ?? "8")),
-                signingCredentials: credenciais);
+                signingCredentials: creds);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
     }
 }

@@ -1,0 +1,62 @@
+@* Exibe os períodos cadastrados (mês/ano) com as métricas DEI. *@
+
+@model List<Valoriza.API.Models.IndicadorDiversidade>
+@{
+    // Título da aba / página
+    ViewData["Title"] = "Indicadores";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Indicadores de Diversidade</h2>
+
+    @* Botão de cadastro visível apenas para administradores *@
+    @if (User.IsInRole("AdminValoriza") || User.IsInRole("AdminEmpresa"))
+    {
+        <a asp-action="Create" class="btn btn-dark btn-sm">Novo indicador</a>
+    }
+</div>
+
+@* Nenhum registro no banco *@
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-light border">Nenhum indicador cadastrado.</div>
+}
+else
+{
+    @* Um card para cada período (já ordenado no Controller) *@
+    foreach (var i in Model)
+    {
+        <div class="card p-3 mb-3">
+            @* Cabeçalho: mês/ano *@
+            <h5 class="h6">@i.Mes/@i.Ano</h5>
+
+            @* Métricas em colunas *@
+            <div class="row g-2 text-center small">
+                <div class="col">
+                    <strong>@i.TotalColaboradores</strong><br />Total
+                </div>
+                <div class="col">
+                    <strong>@i.ColaboradoresNegros</strong><br />Negros
+                </div>
+                <div class="col">
+                    <strong>@i.ColaboradoresIndigenas</strong><br />Indígenas
+                </div>
+                <div class="col">
+                    <strong>@i.ColaboradoresPcd</strong><br />PcD
+                </div>
+                <div class="col">
+                    <strong>@i.MulheresLideranca</strong><br />Mulheres liderança
+                </div>
+                <div class="col">
+                    <strong>@i.NegrosLideranca</strong><br />Negros liderança
+                </div>
+                <div class="col">
+                    <strong>@i.PercentualAdesaoTreinamentos%</strong><br />Adesão
+                </div>
+                <div class="col">
+                    <strong>@i.DenunciasResolvidas/@i.TotalDenunciasPeriodo</strong><br />Denúncias
+                </div>
+            </div>
+        </div>
+    }
+}

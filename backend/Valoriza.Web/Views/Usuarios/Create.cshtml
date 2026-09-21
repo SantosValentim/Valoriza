@@ -1,0 +1,58 @@
+@* Formulário de cadastro de usuário (Admin) *@
+
+@{
+    ViewData["Title"] = "Novo Usuário";
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+<div class="card p-4 col-md-7">
+    <h3 class="h5 mb-3">Cadastrar usuário</h3>
+
+    @* Erro vindo do Controller *@
+    @if (ViewBag.Erro != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Erro</div>
+    }
+
+    <form method="post" asp-action="Create">
+        <div class="mb-3">
+            <label class="form-label">Nome completo</label>
+            <input type="text" name="nomeCompleto" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">E-mail</label>
+            <input type="email" name="email" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Senha</label>
+            <input type="password" name="senha" class="form-control" required minlength="6" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">CPF (opcional)</label>
+            <input type="text" name="cpf" class="form-control" maxlength="14" />
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Papel</label>
+                <select name="role" class="form-select">
+                    <option value="Colaborador">Colaborador</option>
+                    <option value="GestorDEI">Gestor DEI</option>
+                    <option value="AdminEmpresa">Admin Empresa</option>
+                    @* Só AdminValoriza pode criar outro AdminValoriza *@
+                    @if (User.IsInRole("AdminValoriza"))
+                    {
+                        <option value="AdminValoriza">Admin Valoriza</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Empresa ID</label>
+                <input type="number" name="empresaId" class="form-control" value="1" />
+            </div>
+        </div>
+        <button type="submit" class="btn btn-dark">Cadastrar</button>
+    </form>
+</div>

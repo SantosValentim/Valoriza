@@ -1,0 +1,77 @@
+@* Formulário de novo indicador mensal preenchido pelo Admin e enviado via POST para Create. *@
+
+@{
+    ViewData["Title"] = "Novo Indicador";
+}
+
+<div class="mb-3">
+    @* Volta para a lista *@
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+<div class="card p-4 col-md-8">
+    <h3 class="h5 mb-3">Cadastrar indicador mensal</h3>
+
+    <form method="post" asp-action="Create">
+        @* Período e empresa *@
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Empresa ID</label>
+                <input type="number" name="EmpresaId" class="form-control" value="1" required />
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Ano</label>
+                <input type="number" name="Ano" class="form-control"
+                       value="@DateTime.Now.Year" required />
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Mês</label>
+                <input type="number" name="Mes" class="form-control"
+                       value="@DateTime.Now.Month" min="1" max="12" required />
+            </div>
+        </div>
+
+        @* Métricas de diversidade e inclusão *@
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Total colaboradores</label>
+                <input type="number" name="TotalColaboradores" class="form-control" value="0" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Negros / pardos</label>
+                <input type="number" name="ColaboradoresNegros" class="form-control" value="0" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Indígenas</label>
+                <input type="number" name="ColaboradoresIndigenas" class="form-control" value="0" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">PcD</label>
+                <input type="number" name="ColaboradoresPcd" class="form-control" value="0" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Mulheres em liderança</label>
+                <input type="number" name="MulheresLideranca" class="form-control" value="0" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Negros em liderança</label>
+                <input type="number" name="NegrosLideranca" class="form-control" value="0" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">% adesão treinamentos</label>
+                <input type="number" step="0.01" name="PercentualAdesaoTreinamentos"
+                       class="form-control" value="0" min="0" max="100" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Total denúncias</label>
+                <input type="number" name="TotalDenunciasPeriodo" class="form-control" value="0" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Denúncias resolvidas</label>
+                <input type="number" name="DenunciasResolvidas" class="form-control" value="0" min="0" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-dark">Salvar</button>
+    </form>
+</div>

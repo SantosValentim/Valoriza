@@ -1,0 +1,54 @@
+@model List<(Valoriza.API.Models.ApplicationUser User, IList<string> Roles)>
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Usuarios</h2>
+    <a asp-action="Create" class="btn btn-dark btn-sm">Novo usuario</a>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Papel</th>
+                    <th>Ativo</th>
+                    <th>Cadastro</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model == null || !Model.Any())
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">Nenhum usuario.</td></tr>
+            }
+            else
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.User.NomeCompleto</td>
+                        <td>@item.User.Email</td>
+                        <td>@string.Join(", ", item.Roles)</td>
+                        <td>@(item.User.Ativo ? "Sim" : "Nao")</td>
+                        <td>@item.User.DataCadastro.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @if (item.User.Ativo)
+                            {
+                                <form asp-action="Desativar" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@item.User.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Desativar?')">Desativar</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
