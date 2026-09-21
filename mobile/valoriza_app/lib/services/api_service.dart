@@ -1,6 +1,4 @@
-/* ============================================================
-   Serviço de comunicação com a API REST
-   ============================================================ */
+/* Serviço de comunicação com a API REST */
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;

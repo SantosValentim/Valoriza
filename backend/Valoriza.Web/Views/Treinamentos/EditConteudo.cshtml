@@ -1,0 +1,50 @@
+@model Valoriza.API.Models.Conteudo
+@{
+    ViewData["Title"] = "Editar Conteúdo";
+}
+
+<div class="mb-3">
+    <a asp-action="Details" asp-route-id="@Model.TrilhaId"
+       class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+<div class="card p-4 col-md-8">
+    <h3 class="h5 mb-3">Editar conteúdo</h3>
+
+    <form method="post" asp-action="EditConteudo">
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input type="text" name="titulo" class="form-control" value="@Model.Titulo" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Texto</label>
+            <textarea name="texto" class="form-control" rows="4">@Model.Texto</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">URL do vídeo</label>
+            <input type="url" name="urlVideo" class="form-control" value="@Model.UrlVideo" />
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Tipo</label>
+                <select name="tipo" class="form-select">
+                    <option>Texto</option>
+                    <option>Video</option>
+                    <option>Quiz</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Ordem</label>
+                <input type="number" name="ordem" class="form-control" value="@Model.Ordem" min="1" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Duração (min)</label>
+                <input type="number" name="duracaoMinutos" class="form-control"
+                       value="@Model.DuracaoMinutos" min="1" />
+            </div>
+        </div>
+        <button type="submit" class="btn btn-dark">Salvar</button>
+    </form>
+</div>

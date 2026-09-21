@@ -1,0 +1,81 @@
+@model Valoriza.API.Models.TrilhaTreinamento
+@{
+    ViewData["Title"] = Model.Titulo;
+    var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+@* Cabeçalho da trilha *@
+<div class="card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+            <h2 class="h4">@Model.Titulo</h2>
+            <p class="text-muted">@Model.Descricao</p>
+            <span class="badge bg-secondary">@Model.Nivel</span>
+            <span class="badge bg-light text-dark">@Model.CargaHoraria min</span>
+        </div>
+
+        @if (isAdmin)
+        {
+            <div class="d-flex gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.Id"
+                   class="btn btn-outline-secondary btn-sm">Editar trilha</a>
+                <a asp-action="AddConteudo" asp-route-trilhaId="@Model.Id"
+                   class="btn btn-dark btn-sm">+ Conteúdo</a>
+            </div>
+        }
+    </div>
+</div>
+
+<h3 class="h5 mb-3">Conteúdos</h3>
+
+@if (Model.Conteudos == null || !Model.Conteudos.Any())
+{
+    <div class="alert alert-light border">Nenhum conteúdo nesta trilha.</div>
+}
+else
+{
+    <div class="list-group mb-4">
+        @foreach (var c in Model.Conteudos.OrderBy(x => x.Ordem))
+        {
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <div class="fw-semibold">@c.Ordem. @c.Titulo</div>
+                        <div class="small text-muted">
+                            <span class="badge bg-light text-dark">@c.Tipo</span>
+                            @c.DuracaoMinutos min
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(c.Texto))
+                        {
+                            <p class="mt-2 mb-0 small">@c.Texto</p>
+                        }
+
+                        @if (!string.IsNullOrEmpty(c.UrlVideo))
+                        {
+                            <a href="@c.UrlVideo" target="_blank" class="small">Assistir vídeo</a>
+                        }
+                    </div>
+
+                    @if (isAdmin)
+                    {
+                        <div class="d-flex gap-1">
+                            <a asp-action="EditConteudo" asp-route-id="@c.Id"
+                               class="btn btn-sm btn-outline-secondary">Editar</a>
+
+                            <form asp-action="DeleteConteudo" method="post"
+                                  onsubmit="return confirm('Excluir este conteúdo?');">
+                                <input type="hidden" name="id" value="@c.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
