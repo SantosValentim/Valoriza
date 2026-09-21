@@ -1,11 +1,34 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/sync_service.dart';
 import 'trilhas_screen.dart';
 import 'denuncia_screen.dart';
 import 'login_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    
+    // Dispara a sincronização automática em segundo plano ao abrir a tela inicial
+    SyncService().sincronizarDenuncias().then((totalSincronizado) {
+      if (totalSincronizado > 0 && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$totalSincronizado denúncia(s) pendente(s) foram sincronizada(s) com sucesso!'),
+            backgroundColor: Colors.blue,
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

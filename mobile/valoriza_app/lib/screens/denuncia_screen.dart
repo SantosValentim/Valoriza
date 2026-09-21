@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/sync_service.dart';
 
 class DenunciaScreen extends StatefulWidget {
   const DenunciaScreen({super.key});
@@ -24,32 +25,58 @@ class _DenunciaScreenState extends State<DenunciaScreen> {
 
     setState(() => _enviando = true);
 
+    final dadosDenuncia = {
+      'tipo': _tipo,
+      'relato': _relatoController.text.trim(),
+      'anonima': _anonima,
+    };
+
     try {
+      // Tentativa online direta
       await _api.enviarDenuncia(
-        tipo: _tipo,
-        relato: _relatoController.text.trim(),
-        anonima: _anonima,
+        tipo: dadosDenuncia['tipo'] as String,
+        relato: dadosDenuncia['relato'] as String,
+        anonima: dadosDenuncia['anonima'] as bool,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Denúncia registrada com sucesso. Obrigado pela coragem.'),
+            content: Text('Denúncia registrada online com sucesso!'),
             backgroundColor: Colors.green,
           ),
         );
         Navigator.pop(context);
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
-        );
+    } on Exception catch (e) {
+      // Intercepta falhas de rede do emulador (SocketException / Connection refused)
+      if (e.toString().contains('SocketException') || e.toString().contains('Connection refused')) {
+        
+        // Grava no SharedPreferences
+        await SyncService().salvarOffline(dadosDenuncia);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Você está sem internet! O relato foi salvo localmente e será enviado automaticamente assim que a rede voltar.'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 5),
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro na API: $e'), backgroundColor: Colors.red),
+          );
+        }
       }
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
