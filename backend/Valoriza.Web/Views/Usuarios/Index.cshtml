@@ -1,6 +1,13 @@
 @model List<(Valoriza.API.Models.ApplicationUser User, IList<string> Roles)>
 @{
     ViewData["Title"] = "Usuarios";
+    var isAdminValoriza = User.IsInRole("AdminValoriza");
+    var isAdminEmpresa = User.IsInRole("AdminEmpresa") && !isAdminValoriza;
+}
+
+@if (TempData["Erro"] != null)
+{
+    <div class="alert alert-danger">@TempData["Erro"]</div>
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -30,6 +37,8 @@
             {
                 foreach (var item in Model)
                 {
+                    var isAlvoAdmin = item.Roles.Contains("AdminValoriza") || item.Roles.Contains("AdminEmpresa");
+                    var podeDesativar = item.User.Ativo && !(isAdminEmpresa && isAlvoAdmin); // AdminEmpresa não vê botão em linhas de admin
                     <tr>
                         <td>@item.User.NomeCompleto</td>
                         <td>@item.User.Email</td>

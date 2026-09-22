@@ -4,6 +4,7 @@
 @{
     // Título da aba / página
     ViewData["Title"] = "Indicadores";
+    var isAdminValoriza = User.IsInRole("AdminValoriza");
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -29,6 +30,15 @@ else
         <div class="card p-3 mb-3">
             @* Cabeçalho: mês/ano *@
             <h5 class="h6">@i.Mes/@i.Ano</h5>
+            @* Empresa visível para AdminValoriza (vê todas as empresas) *@
+            @if (isAdminValoriza)
+                {
+                    <span class="badge bg-dark">
+                        @(i.Empresa?.NomeFantasia
+                            ?? i.Empresa?.RazaoSocial
+                            ?? $"Empresa #{i.EmpresaId}")
+                    </span>
+                }
 
             @* Métricas em colunas *@
             <div class="row g-2 text-center small">

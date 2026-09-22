@@ -83,14 +83,36 @@ namespace Valoriza.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// AdminEmpresa não pode desativar nenhum outro administrador
         [HttpPost]
         public async Task<IActionResult> Desativar(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
+            if (user == null)
+                return NotFound();
+
+            // Não permite desativar a si mesmo
+            var currentId = _userManager.GetUserId(User);
+            if (user.Id == currentId)
+            {
+                TempData["Erro"] = "Você não pode desativar a si mesmo.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var rolesAlvo = await _userManager.GetRolesAsync(user);
+            var isAlvoAdmin = rolesAlvo.Contains("AdminValoriza") || rolesAlvo.Contains("AdminEmpresa");
+
+            // AdminEmpresa não pode desativar nenhum admin
+            if (User.IsInRole("AdminEmpresa") && !User.IsInRole("AdminValoriza") && isAlvoAdmin)
+            {
+                TempData["Erro"] = "Admin Empresa não pode desativar outros administradores.";
+                return RedirectToAction(nameof(Index));
+            }
 
             user.Ativo = false;
             await _userManager.UpdateAsync(user);
+
+            TempData["Sucesso"] = $"Usuário {user.NomeCompleto} desativado.";
             return RedirectToAction(nameof(Index));
         }
     }
