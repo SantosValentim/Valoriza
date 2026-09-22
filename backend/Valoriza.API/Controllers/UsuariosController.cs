@@ -1,6 +1,4 @@
-/* ============================================================
-   UsuariosController
-   ============================================================ */
+/* UsuariosController */
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
@@ -186,17 +184,33 @@ namespace Valoriza.API.Controllers
             return Ok(ApiResponse<object>.Ok("Usuário atualizado com sucesso."));
         }
 
-        [HttpDelete("{id}")]
+        /// AdminEmpresa não pode desativar nenhum outro administrador
+        [HttpPut("{id}/desativar")]
         [Authorize(Roles = "AdminValoriza,AdminEmpresa")]
         public async Task<IActionResult> Desativar(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user is null)
+            if (user == null)
                 return NotFound(ApiErrorResponse.Criar("Usuário não encontrado.", "USR_404"));
+
+            // Não permite desativar a si mesmo
+            var currentId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (user.Id == currentId)
+                return BadRequest(ApiErrorResponse.Criar("Você não pode desativar a si mesmo.", "USR_001"));
+
+            var rolesAlvo = await _userManager.GetRolesAsync(user);
+            var isAlvoAdmin = rolesAlvo.Contains("AdminValoriza") || rolesAlvo.Contains("AdminEmpresa");
+
+            // AdminEmpresa não pode desativar outros admins
+            var isAdminValoriza = User.IsInRole("AdminValoriza");
+            if (!isAdminValoriza && User.IsInRole("AdminEmpresa") && isAlvoAdmin)
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    ApiErrorResponse.Criar("Admin Empresa não pode desativar outros administradores.", "USR_403"));
 
             user.Ativo = false;
             await _userManager.UpdateAsync(user);
-            return Ok(ApiResponse<object>.Ok("Usuário desativado com sucesso."));
+
+            return Ok(ApiResponse<object>.Ok(null, $"Usuário {user.NomeCompleto} desativado."));
         }
     }
 }
