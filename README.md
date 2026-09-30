@@ -472,7 +472,7 @@ Na primeira execução, o seed cria:
 **Login de teste (exemplo do seed):**
 
 ```text
-E-mail: oliver@valoriza.com
+E-mail: admin@valoriza.com
 Senha:  Senha@123
 ```
 
