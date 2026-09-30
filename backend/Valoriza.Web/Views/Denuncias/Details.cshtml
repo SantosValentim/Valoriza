@@ -1,50 +1,130 @@
+@* Detalhe / acompanhamento de denúncia
+   - Autor: vê status, observações (mesmo se anônima)
+   - Gestor/Admin da mesma empresa: vê tudo; nome oculto se anônima
+   - Colaborador não autor: não chega aqui (Forbid no controller) *@
 @model Valoriza.API.Models.Denuncia
 @{
-    ViewData["Title"] = "Detalhes da Denúncia";
+    ViewData["Title"] = "Acompanhar denúncia";
+
+    var isGestor = (bool)(ViewBag.IsGestorOuAdmin ?? false);
+    var isAutor = (bool)(ViewBag.IsAutor ?? false);
+    // true quando é anônima e quem está vendo NÃO é o autor
+    var ocultarAutor = (bool)(ViewBag.OcultarAutor ?? false);
 }
 
 <div class="mb-3">
     <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
 </div>
 
-<div class="card p-4">
-    <h3 class="h5">Protocolo: @Model.Protocolo</h3>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-3">Tipo</dt>
-        <dd class="col-sm-9">@Model.Tipo</dd>
-        <dt class="col-sm-3">Status</dt>
-        <dd class="col-sm-9">@Model.Status</dd>
-        <dt class="col-sm-3">Data</dt>
-        <dd class="col-sm-9">@Model.DataRegistro.ToString("dd/MM/yyyy HH:mm")</dd>
-        <dt class="col-sm-3">Anônima</dt>
-        <dd class="col-sm-9">@(Model.Anonima ? "Sim" : "Não")</dd>
-        <dt class="col-sm-3">Relato</dt>
-        <dd class="col-sm-9">@Model.Relato</dd>
-        @if (!string.IsNullOrEmpty(Model.ObservacoesInternas))
-        {
-            <dt class="col-sm-3">Observações</dt>
-            <dd class="col-sm-9">@Model.ObservacoesInternas</dd>
-        }
-    </dl>
+@* Cartão principal *@
+<div class="card p-4 mb-3">
+    <div class="d-flex justify-content-between flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-1">@Model.Titulo</h2>
+            <p class="mb-0 small text-muted">
+                Protocolo: <code>@Model.Protocolo</code>
+                · @Model.DataRegistro.ToString("dd/MM/yyyy HH:mm")
+                @if (Model.Anonima)
+                {
+                    <span class="badge bg-secondary ms-1">Anônima</span>
+                }
+            </p>
+        </div>
+        <span class="badge bg-dark align-self-start">@Model.Status</span>
+    </div>
 
     <hr />
-    <h5 class="h6">Atualizar status</h5>
-    <form asp-action="AtualizarStatus" method="post" class="row g-2">
-        <input type="hidden" name="id" value="@Model.Id" />
-        <div class="col-md-4">
-            <select name="status" class="form-select">
-                <option value="Aberta">Aberta</option>
-                <option value="EmAnalise">Em Análise</option>
-                <option value="Resolvida">Resolvida</option>
-                <option value="Arquivada">Arquivada</option>
-            </select>
+
+    @* Descrição da denúncia *@
+    <p class="mb-3">@Model.Descricao</p>
+
+    @if (!string.IsNullOrEmpty(Model.Categoria))
+    {
+        <p class="small mb-2">
+            <strong>Categoria:</strong> @Model.Categoria
+        </p>
+    }
+
+    @* Identidade do autor:
+       - Gestor só vê se NÃO for anônima
+       - Autor sempre sabe que foi ele (mensagem se anônima) *@
+    @if (isGestor && !ocultarAutor && Model.Usuario != null)
+    {
+        <p class="small mb-2">
+            <strong>Autor:</strong>
+            @(Model.Usuario.NomeSocial ?? Model.Usuario.NomeCompleto)
+            @if (!string.IsNullOrEmpty(Model.Usuario.Email))
+            {
+                <span class="text-muted">(@Model.Usuario.Email)</span>
+            }
+        </p>
+    }
+    else if (isAutor && Model.Anonima)
+    {
+        <p class="small text-muted mb-2">
+            Você registrou esta denúncia como anônima. Gestores não veem seu nome.
+        </p>
+    }
+
+    @* Empresa (útil para Admin da mesma empresa) *@
+    @if (isGestor && Model.Empresa != null)
+    {
+        <p class="small mb-0">
+            <strong>Empresa:</strong>
+            @(Model.Empresa.NomeFantasia ?? Model.Empresa.RazaoSocial)
+        </p>
+    }
+
+    @* Observações / andamento (visível ao autor e ao gestor) *@
+    @if (!string.IsNullOrWhiteSpace(Model.Observacoes))
+    {
+        <div class="alert alert-light border mt-3 mb-0">
+            <strong>Observações / andamento</strong>
+            <p class="mb-0 mt-1">@Model.Observacoes</p>
         </div>
-        <div class="col-md-5">
-            <input type="text" name="observacoes" class="form-control" placeholder="Observações internas" />
-        </div>
-        <div class="col-md-3">
-            <button type="submit" class="btn btn-dark w-100">Salvar</button>
-        </div>
-    </form>
+    }
+    else if (isAutor)
+    {
+        <p class="small text-muted mt-3 mb-0">
+            Ainda não há observações de andamento nesta denúncia.
+        </p>
+    }
 </div>
+
+@* Atualizar status (somente gestor/admin da empresa) *@
+@if (isGestor)
+{
+    <div class="card p-4">
+        <h3 class="h6 mb-3">Atualizar andamento</h3>
+
+        <form method="post" asp-action="AtualizarStatus">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    @foreach (var s in new[] { "Aberta", "Em análise", "Em investigação", "Resolvida", "Arquivada" })
+                    {
+                        if (string.Equals(Model.Status, s, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <option value="@s" selected>@s</option>
+                        }
+                        else
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Observações (visíveis ao autor)</label>
+                <textarea name="observacoes" class="form-control" rows="3"
+                          placeholder="Atualize o andamento para o autor acompanhar...">@Model.Observacoes</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-dark btn-sm">Salvar</button>
+        </form>
+    </div>
+}

@@ -1,0 +1,51 @@
+@* Formulário: criar programa e escolher mentor
+   Mentor = qualquer usuário ativo da mesma empresa *@
+@{
+    ViewData["Title"] = "Novo Programa de Mentoria";
+    var colaboradores = ViewBag.Colaboradores as List<Valoriza.API.Models.ApplicationUser>
+                        ?? new List<Valoriza.API.Models.ApplicationUser>();
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+<div class="card p-4 col-md-8">
+    <h3 class="h5 mb-3">Criar programa de mentoria</h3>
+
+    @if (ViewBag.Erro != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Erro</div>
+    }
+
+    <form method="post" asp-action="Create">
+        <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input type="text" name="titulo" class="form-control" required
+                   placeholder="Ex.: Mentoria para profissionais negros e indígenas" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Objetivos</label>
+            <textarea name="objetivos" class="form-control" rows="3"
+                      placeholder="Descreva os objetivos do programa"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Mentor</label>
+            <select name="mentorId" class="form-select" required>
+                <option value="">— Selecione qualquer usuário ativo —</option>
+                @foreach (var c in colaboradores)
+                {
+                    <option value="@c.Id">@c.NomeCompleto (@c.Email)</option>
+                }
+            </select>
+            <div class="form-text">
+                Pode ser Admin, Gestor DEI ou Colaborador da mesma empresa.
+                Escolhido por Admin Valoriza (empresa Valoriza), Admin Empresa ou Gestor DEI.
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-dark">Criar programa</button>
+    </form>
+</div>

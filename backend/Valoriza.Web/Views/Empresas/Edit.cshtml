@@ -1,0 +1,123 @@
+  @* Formulário de edição de empresa *@
+
+@model Valoriza.API.Models.Empresa
+@{
+    ViewData["Title"] = "Editar empresa";
+    var valorAtual = Valoriza.Web.Controllers.EmpresasController.ValorPorPlano(Model.Plano);
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+<div class="card p-4 col-md-8">
+    <h3 class="h5 mb-3">Editar empresa</h3>
+
+    @if (ViewBag.Erro != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Erro</div>
+    }
+
+    <form method="post" asp-action="Edit">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Razão social *</label>
+                <input type="text" name="razaoSocial" class="form-control"
+                       value="@Model.RazaoSocial" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Nome fantasia</label>
+                <input type="text" name="nomeFantasia" class="form-control"
+                       value="@Model.NomeFantasia" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">CNPJ *</label>
+                <input type="text" name="cnpj" class="form-control"
+                       value="@Model.Cnpj" required />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Segmento</label>
+                <input type="text" name="segmento" class="form-control"
+                       value="@Model.Segmento" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Qtd. colaboradores</label>
+                <input type="number" name="quantidadeColaboradores" class="form-control"
+                       value="@Model.QuantidadeColaboradores" min="0" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Plano *</label>
+                <select name="plano" id="plano" class="form-select" required onchange="atualizarValor()">
+                    @foreach (var p in new[] { "Basico", "Profissional", "Empresarial" })
+                    {
+                        var selected = Model.Plano == p
+                            || (Model.Plano == "Básico" && p == "Basico");
+                        if (selected)
+                        {
+                            <option value="@p" selected>@p</option>
+                        }
+                        else
+                        {
+                            <option value="@p">@p</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Ciclo de cobrança</label>
+                <select name="cicloCobranca" class="form-select">
+                    @if (Model.CicloCobranca == "Anual")
+                    {
+                        <option value="Mensal">Mensal</option>
+                        <option value="Anual" selected>Anual</option>
+                    }
+                    else
+                    {
+                        <option value="Mensal" selected>Mensal</option>
+                        <option value="Anual">Anual</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Valor da assinatura (fixo)</label>
+                <input type="text" id="valorExibicao" class="form-control" readonly
+                       value="@valorAtual.ToString("C")" />
+                <div class="form-text">Definido automaticamente pelo plano (usado no Churn).</div>
+            </div>
+        </div>
+
+        <div class="form-check mb-3">
+            @if (Model.Ativa)
+            {
+                <input class="form-check-input" type="checkbox" name="ativa" value="true" id="ativa" checked />
+            }
+            else
+            {
+                <input class="form-check-input" type="checkbox" name="ativa" value="true" id="ativa" />
+            }
+            <label class="form-check-label" for="ativa">Empresa ativa no sistema</label>
+        </div>
+
+        <button type="submit" class="btn btn-dark">Salvar</button>
+    </form>
+</div>
+
+<script>
+    // Espelha o helper C# para pré-visualização no formulário
+    var precos = { 'Basico': 499, 'Profissional': 1299, 'Empresarial': 2999 };
+    function atualizarValor() {
+        var p = document.getElementById('plano').value;
+        var v = precos[p] || 499;
+        document.getElementById('valorExibicao').value =
+            v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+</script>

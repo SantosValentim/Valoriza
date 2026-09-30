@@ -1,0 +1,102 @@
+@* Formulário de editar usuário possui os esmos campos do cadastro *@
+@model Valoriza.API.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Editar usuário";
+    var roles = ViewBag.Roles as IList<string> ?? new List<string>();
+    var roleAtual = roles.FirstOrDefault() ?? "Colaborador";
+    var isAdminValoriza = (bool)(ViewBag.IsAdminValoriza ?? false);
+}
+
+<div class="mb-3">
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+<div class="card border-0 shadow-sm p-4 col-lg-8">
+    <h3 class="h5 mb-3">Editar usuário</h3>
+    @if (ViewBag.Erro != null) { <div class="alert alert-danger">@ViewBag.Erro</div> }
+
+    <form method="post" asp-action="Edit" enctype="multipart/form-data">
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        <div class="mb-3">
+            <label class="form-label">Foto do perfil</label>
+            @if (!string.IsNullOrEmpty(Model.FotoUrl))
+            {
+                <div class="mb-2">
+                    <img src="@Model.FotoUrl" alt="Foto atual" class="rounded-circle border"
+                         style="width:72px;height:72px;object-fit:cover;" />
+                </div>
+            }
+            <input type="file" name="foto" class="form-control"
+                   accept="image/jpeg,image/png,image/gif,image/webp" />
+            <div class="form-text">Deixe em branco para manter a foto atual.</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Nome completo *</label>
+                <input type="text" name="nomeCompleto" class="form-control" value="@Model.NomeCompleto" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Nome social</label>
+                <input type="text" name="nomeSocial" class="form-control" value="@Model.NomeSocial" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">E-mail *</label>
+            <input type="email" name="email" class="form-control" value="@Model.Email" required />
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">CPF</label>
+                <input type="text" name="cpf" class="form-control" value="@Model.Cpf" maxlength="14" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Gênero</label>
+                <select name="genero" class="form-select">
+                    <option value="">— Selecione —</option>
+                    <option value="Feminino" selected="@(Model.Genero=="Feminino")">Feminino</option>
+                    <option value="Masculino" selected="@(Model.Genero=="Masculino")">Masculino</option>
+                    <option value="Não-binário" selected="@(Model.Genero=="Não-binário")">Não-binário</option>
+                    <option value="Prefere não informar" selected="@(Model.Genero=="Prefere não informar")">Prefere não informar</option>
+                    <option value="Outro" selected="@(Model.Genero=="Outro")">Outro</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Etnia / raça</label>
+                <select name="etnia" class="form-select">
+                    <option value="">— Selecione —</option>
+                    <option value="Preta" selected="@(Model.Etnia=="Preta")">Preta</option>
+                    <option value="Parda" selected="@(Model.Etnia=="Parda")">Parda</option>
+                    <option value="Branca" selected="@(Model.Etnia=="Branca")">Branca</option>
+                    <option value="Indígena" selected="@(Model.Etnia=="Indígena")">Indígena</option>
+                    <option value="Amarela" selected="@(Model.Etnia=="Amarela")">Amarela</option>
+                    <option value="Prefere não informar" selected="@(Model.Etnia=="Prefere não informar")">Prefere não informar</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Cargo</label>
+                <input type="text" name="cargo" class="form-control" value="@Model.Cargo" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Salário (R$)</label>
+                <input type="number" name="salario" class="form-control" step="0.01" min="0" value="@Model.Salario" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Papel</label>
+            <select name="role" class="form-select">
+                @if (isAdminValoriza)
+                {
+                    <option value="AdminValoriza" selected="@(roleAtual=="AdminValoriza")">Admin Valoriza</option>
+                }
+                <option value="AdminEmpresa" selected="@(roleAtual=="AdminEmpresa")">Admin Empresa</option>
+                <option value="GestorDEI" selected="@(roleAtual=="GestorDEI")">Gestor DEI</option>
+                <option value="Colaborador" selected="@(roleAtual=="Colaborador")">Colaborador</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-dark">Salvar</button>
+    </form>
+</div>

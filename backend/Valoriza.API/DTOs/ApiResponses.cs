@@ -1,10 +1,8 @@
-/* ============================================================
-   DTOs de Resposta Padronizados
-   Autor: Oliver Valentim Carvalho Santos - RA 2632071
-   ============================================================ */
-
+/* DTOs de RESPOSTA (Response) padronizados. Não levam DataAnnotations de validação de entrada. */
 namespace Valoriza.API.DTOs
 {
+    // ENVELOPES GENÉRICOS
+    /// Resposta de sucesso com payload tipado.
     public class ApiResponse<T>
     {
         public bool Sucesso { get; set; } = true;
@@ -19,6 +17,7 @@ namespace Valoriza.API.DTOs
             => new() { Sucesso = true, Mensagem = mensagem, Dados = default };
     }
 
+    /// Resposta de erro padronizada.
     public class ApiErrorResponse
     {
         public bool Sucesso { get; set; } = false;
@@ -42,6 +41,7 @@ namespace Valoriza.API.DTOs
             };
     }
 
+    /// Lista paginada.
     public class PagedResponse<T>
     {
         public bool Sucesso { get; set; } = true;
@@ -51,13 +51,17 @@ namespace Valoriza.API.DTOs
         public int ItensPorPagina { get; set; }
         public int TotalItens { get; set; }
         public int TotalPaginas => ItensPorPagina > 0
-            ? (int)Math.Ceiling(TotalItens / (double)ItensPorPagina) : 0;
+            ? (int)Math.Ceiling(TotalItens / (double)ItensPorPagina)
+            : 0;
         public bool TemProximaPagina => PaginaAtual < TotalPaginas;
         public bool TemPaginaAnterior => PaginaAtual > 1;
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         public static PagedResponse<T> Criar(
-            List<T> dados, int paginaAtual, int itensPorPagina, int totalItens,
+            List<T> dados,
+            int paginaAtual,
+            int itensPorPagina,
+            int totalItens,
             string mensagem = "Dados recuperados com sucesso.")
             => new()
             {
@@ -69,10 +73,12 @@ namespace Valoriza.API.DTOs
             };
     }
 
+    // AUTH / USUÁRIO
     public class UsuarioResponseDTO
     {
         public string Id { get; set; } = string.Empty;
         public string NomeCompleto { get; set; } = string.Empty;
+        public string? NomeSocial { get; set; }
         public string Email { get; set; } = string.Empty;
         public int? EmpresaId { get; set; }
         public string? EmpresaNome { get; set; }
@@ -88,20 +94,24 @@ namespace Valoriza.API.DTOs
         public UsuarioResponseDTO Usuario { get; set; } = new();
     }
 
+    // DENÚNCIA
     public class DenunciaResponseDTO
     {
         public int Id { get; set; }
-        public string? Protocolo { get; set; }
-        public string Tipo { get; set; } = string.Empty;
-        public string Relato { get; set; } = string.Empty;
+        public string Protocolo { get; set; } = string.Empty;
+        public string Titulo { get; set; } = string.Empty;
+        public string? Descricao { get; set; }
+        public string? Categoria { get; set; }
         public bool Anonima { get; set; }
         public string Status { get; set; } = string.Empty;
+        public string? Observacoes { get; set; }
         public DateTime DataRegistro { get; set; }
         public DateTime? DataResolucao { get; set; }
         public string? EmpresaNome { get; set; }
         public string? UsuarioNome { get; set; }
     }
 
+    // TREINAMENTOS
     public class TrilhaResponseDTO
     {
         public int Id { get; set; }
@@ -136,6 +146,7 @@ namespace Valoriza.API.DTOs
         public string? CertificadoUrl { get; set; }
     }
 
+    // INDICADORES
     public class IndicadorResponseDTO
     {
         public int Id { get; set; }
@@ -152,6 +163,7 @@ namespace Valoriza.API.DTOs
         public int DenunciasResolvidas { get; set; }
     }
 
+    // MENTORIA
     public class MentoriaResponseDTO
     {
         public int Id { get; set; }
@@ -161,5 +173,10 @@ namespace Valoriza.API.DTOs
         public DateTime DataInicio { get; set; }
         public DateTime? DataFim { get; set; }
         public string? Objetivos { get; set; }
+    }
+
+    public class PostResponseDto
+    {
+        public string Texto { get; set; } = string.Empty;
     }
 }

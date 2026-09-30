@@ -1,0 +1,52 @@
+@* Extração de relatórios gerenciais (CSV / Excel) *@
+@{
+    ViewData["Title"] = "Relatórios";
+    var isAdminValoriza = (bool)(ViewBag.IsAdminValoriza ?? false);
+}
+
+<h2 class="h4 mb-2">Relatórios gerenciais</h2>
+<p class="text-muted small mb-4">
+    Download em CSV (abre no Excel). Os dados respeitam o isolamento por empresa.
+</p>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <h5 class="h6">Usuários e representatividade</h5>
+            <p class="small text-muted">Nome, gênero, etnia, cargo, salário, empresa.</p>
+            <a asp-action="Usuarios" class="btn btn-dark btn-sm">Baixar CSV</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <h5 class="h6">Denúncias</h5>
+            <p class="small text-muted">Protocolo, status, categoria, datas (sem texto sensível completo se preferir filtrar depois).</p>
+            <a asp-action="Denuncias" class="btn btn-dark btn-sm">Baixar CSV</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <h5 class="h6">Treinamentos e adesão</h5>
+            <p class="small text-muted">Progresso por colaborador e trilha.</p>
+            <a asp-action="Treinamentos" class="btn btn-dark btn-sm">Baixar CSV</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <h5 class="h6">Indicadores de diversidade</h5>
+            <p class="small text-muted">Séries mensais cadastradas.</p>
+            <a asp-action="Indicadores" class="btn btn-dark btn-sm">Baixar CSV</a>
+        </div>
+    </div>
+
+    @if (isAdminValoriza)
+    {
+        <div class="col-md-6">
+            <div class="card p-4 h-100 border-primary">
+                <h5 class="h6">Empresas e churn</h5>
+                <p class="small text-muted">Planos, valores, status de assinatura e motivos de cancelamento.</p>
+                <a asp-action="EmpresasChurn" class="btn btn-dark btn-sm">Baixar CSV</a>
+            </div>
+        </div>
+    }
+</div>

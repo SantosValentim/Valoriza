@@ -1,8 +1,14 @@
+@* Editar conteúdo da trilha *@
+
 @model Valoriza.API.Models.Conteudo
 @{
     ViewData["Title"] = "Editar Conteúdo";
+
+    // Define se o bloco do quiz já deve aparecer ao abrir a página
+    var isQuiz = string.Equals(Model.Tipo, "Quiz", StringComparison.OrdinalIgnoreCase);
 }
 
+@* Voltar para a trilha *@
 <div class="mb-3">
     <a asp-action="Details" asp-route-id="@Model.TrilhaId"
        class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
@@ -11,40 +17,142 @@
 <div class="card p-4 col-md-8">
     <h3 class="h5 mb-3">Editar conteúdo</h3>
 
+    @* Mensagem de validação (ex.: quiz sem opções) *@
+    @if (ViewBag.Erro != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Erro</div>
+    }
+
     <form method="post" asp-action="EditConteudo">
+        @* Id do conteúdo que está sendo editado *@
         <input type="hidden" name="id" value="@Model.Id" />
 
+        @* Dados gerais *@
         <div class="mb-3">
             <label class="form-label">Título</label>
-            <input type="text" name="titulo" class="form-control" value="@Model.Titulo" required />
+            <input type="text" name="titulo" class="form-control"
+                   value="@Model.Titulo" required />
         </div>
+
         <div class="mb-3">
-            <label class="form-label">Texto</label>
-            <textarea name="texto" class="form-control" rows="4">@Model.Texto</textarea>
+            <label class="form-label">Texto / Enunciado</label>
+            <textarea name="texto" class="form-control" rows="4"
+                      placeholder="No Quiz, use este campo para a pergunta">@Model.Texto</textarea>
         </div>
+
         <div class="mb-3">
             <label class="form-label">URL do vídeo</label>
-            <input type="url" name="urlVideo" class="form-control" value="@Model.UrlVideo" />
+            <input type="url" name="urlVideo" class="form-control"
+                   value="@Model.UrlVideo" />
         </div>
+
         <div class="row">
             <div class="col-md-4 mb-3">
                 <label class="form-label">Tipo</label>
-                <select name="tipo" class="form-select">
-                    <option>Texto</option>
-                    <option>Video</option>
-                    <option>Quiz</option>
+                @* onchange mostra/esconde o bloco do quiz *@
+                <select name="tipo" id="tipoConteudo" class="form-select"
+                        onchange="toggleQuiz()">
+                    @if (Model.Tipo == "Texto")
+                    {
+                        <option value="Texto" selected>Texto</option>
+                    }
+                    else
+                    {
+                        <option value="Texto">Texto</option>
+                    }
+
+                    @if (Model.Tipo == "Video")
+                    {
+                        <option value="Video" selected>Video</option>
+                    }
+                    else
+                    {
+                        <option value="Video">Video</option>
+                    }
+
+                    @if (Model.Tipo == "Quiz")
+                    {
+                        <option value="Quiz" selected>Quiz</option>
+                    }
+                    else
+                    {
+                        <option value="Quiz">Quiz</option>
+                    }
                 </select>
             </div>
+
             <div class="col-md-4 mb-3">
                 <label class="form-label">Ordem</label>
-                <input type="number" name="ordem" class="form-control" value="@Model.Ordem" min="1" />
+                <input type="number" name="ordem" class="form-control"
+                       value="@Model.Ordem" min="1" />
             </div>
+
             <div class="col-md-4 mb-3">
                 <label class="form-label">Duração (min)</label>
                 <input type="number" name="duracaoMinutos" class="form-control"
                        value="@Model.DuracaoMinutos" min="1" />
             </div>
         </div>
+
+        @* Admin pode corrigir opções e a resposta correta (ex.: cadastrou B por engano e a certa é A) *@
+        <div id="blocoQuiz"
+             class="border rounded p-3 mb-3"
+             style="background:#f8f9fa; display:@(isQuiz ? "block" : "none");">
+
+            <h6 class="mb-3">Opções do Quiz</h6>
+
+            <div class="mb-2">
+                <label class="form-label">Opção A</label>
+                <input type="text" name="opcaoA" class="form-control"
+                       value="@Model.OpcaoA" maxlength="500" />
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Opção B</label>
+                <input type="text" name="opcaoB" class="form-control"
+                       value="@Model.OpcaoB" maxlength="500" />
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Opção C</label>
+                <input type="text" name="opcaoC" class="form-control"
+                       value="@Model.OpcaoC" maxlength="500" />
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Opção D</label>
+                <input type="text" name="opcaoD" class="form-control"
+                       value="@Model.OpcaoD" maxlength="500" />
+            </div>
+
+            @* Resposta correta – editável a qualquer momento *@
+            <div class="mb-0">
+                <label class="form-label fw-semibold">Resposta correta</label>
+                <select name="respostaCorreta" class="form-select">
+                    <option value="">— Selecione —</option>
+                    <option value="A" selected="@(Model.RespostaCorreta == "A")">A</option>
+                    <option value="B" selected="@(Model.RespostaCorreta == "B")">B</option>
+                    <option value="C" selected="@(Model.RespostaCorreta == "C")">C</option>
+                    <option value="D" selected="@(Model.RespostaCorreta == "D")">D</option>
+                </select>
+                <div class="form-text">
+                    Pode alterar se a resposta correta foi cadastrada errada.
+                </div>
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-dark">Salvar</button>
     </form>
 </div>
+
+@* Script: mostra ou esconde o bloco do quiz conforme o tipo *@
+<script>
+    function toggleQuiz() {
+        var tipo = document.getElementById('tipoConteudo').value;
+        document.getElementById('blocoQuiz').style.display =
+            (tipo === 'Quiz') ? 'block' : 'none';
+    }
+
+    // Ao carregar a página, aplica o estado correto
+    document.addEventListener('DOMContentLoaded', toggleQuiz);
+</script>

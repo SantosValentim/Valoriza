@@ -1,0 +1,72 @@
+@model List<Valoriza.API.Models.ChecklistInclusivoItem>
+@{
+    ViewData["Title"] = "Comunicação inclusiva";
+    var orientacoes = ViewBag.Orientacoes as List<Valoriza.API.Models.OrientacaoInclusiva> ?? new();
+    var concluidos = ViewBag.ConcluidosIds as HashSet<int> ?? new();
+    var inicioSemana = (DateTime)(ViewBag.InicioSemana ?? DateTime.Today);
+}
+
+<h2 class="h4 mb-1">Comunicação inclusiva</h2>
+<p class="text-muted small mb-4">
+    Orientações e checklists para gestores — apoio a uma cultura organizacional antirracista.
+    Checklist da semana de @inicioSemana.ToString("dd/MM/yyyy").
+</p>
+
+<div class="row g-4">
+    @* Checklists *@
+    <div class="col-lg-6">
+        <div class="card p-4">
+            <h3 class="h6 mb-3">Checklist da semana</h3>
+            @if (!Model.Any())
+            {
+                <p class="small text-muted">Nenhum item cadastrado. Peça ao admin para popular o checklist.</p>
+            }
+            else
+            {
+                var grupos = Model.GroupBy(i => i.Contexto);
+                foreach (var g in grupos)
+                {
+                    <div class="mb-3">
+                        <div class="small fw-semibold text-muted mb-2">@g.Key</div>
+                        @foreach (var item in g)
+                        {
+                            var feito = concluidos.Contains(item.Id);
+                            <form asp-action="ToggleChecklist" method="post" class="d-flex align-items-start gap-2 mb-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="itemId" value="@item.Id" />
+                                <button type="submit" class="btn btn-sm @(feito ? "btn-success" : "btn-outline-secondary")">
+                                    @(feito ? "✓" : "○")
+                                </button>
+                                <span class="small @(feito ? "text-decoration-line-through text-muted" : "")">
+                                    @item.Texto
+                                </span>
+                            </form>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    @* Orientações *@
+    <div class="col-lg-6">
+        <div class="card p-4">
+            <h3 class="h6 mb-3">Orientações</h3>
+            @if (!orientacoes.Any())
+            {
+                <p class="small text-muted">Nenhuma orientação cadastrada.</p>
+            }
+            else
+            {
+                foreach (var o in orientacoes)
+                {
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="fw-semibold">@o.Titulo</div>
+                        <span class="badge bg-light text-dark mb-1">@o.Categoria</span>
+                        <p class="small mb-0" style="white-space:pre-line">@o.Conteudo</p>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

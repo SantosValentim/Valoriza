@@ -1,0 +1,65 @@
+@* Todos autenticados podem criar.
+   Anônima: gestores não veem o nome, o autor ainda acompanha. *@
+@{
+    ViewData["Title"] = "Nova denúncia";
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+<div class="card p-4 col-md-8">
+    <h3 class="h5 mb-2">Registrar denúncia</h3>
+    <p class="small text-muted mb-3">
+        Você poderá acompanhar o status e as observações pelo protocolo,
+        mesmo se marcar como anônima.
+    </p>
+
+    @if (ViewBag.Erro != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Erro</div>
+    }
+
+    <form method="post" asp-action="Create">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label class="form-label">Título *</label>
+            <input type="text" name="titulo" class="form-control"
+                   required maxlength="200"
+                   placeholder="Resumo do ocorrido" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descrição *</label>
+            <textarea name="descricao" class="form-control" rows="5"
+                      required minlength="20"
+                      placeholder="Descreva o fato com o máximo de detalhes possível (mín. 20 caracteres)"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Categoria</label>
+            <select name="categoria" class="form-select">
+                <option value="">— Selecione —</option>
+                <option value="Discriminação">Discriminação</option>
+                <option value="Assédio">Assédio</option>
+                <option value="Racismo">Racismo</option>
+                <option value="Outro">Outro</option>
+            </select>
+        </div>
+
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox"
+                   name="anonima" value="true" id="anonima" />
+            <label class="form-check-label" for="anonima">
+                Enviar como anônima
+                <span class="text-muted small">
+                    (gestores não verão seu nome; você ainda acompanha pelo protocolo)
+                </span>
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-dark">Enviar denúncia</button>
+        <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancelar</a>
+    </form>
+</div>

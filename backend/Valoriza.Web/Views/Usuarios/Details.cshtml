@@ -1,0 +1,70 @@
+@* Detalhes do usuário com botões de Editar e Ativar/Desativar *@
+@model Valoriza.API.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Detalhes do usuário";
+    var roles = ViewBag.Roles as IList<string> ?? new List<string>();
+    var nomeExibicao = !string.IsNullOrWhiteSpace(Model.NomeSocial) ? Model.NomeSocial : Model.NomeCompleto;
+    var inicial = nomeExibicao.Length >= 1 ? nomeExibicao[..1].ToUpper() : "?";
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar à lista</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body border-bottom">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                @if (!string.IsNullOrEmpty(Model.FotoUrl))
+                {
+                    <img src="@Model.FotoUrl" alt="" class="rounded-circle border shadow-sm"
+                         style="width:56px;height:56px;object-fit:cover;" />
+                }
+                else
+                {
+                    <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-semibold"
+                         style="width:56px;height:56px;font-size:1.25rem;">@inicial</div>
+                }
+                <div>
+                    <h1 class="h4 mb-0">@nomeExibicao</h1>
+                    @if (!string.IsNullOrWhiteSpace(Model.NomeSocial))
+                    {
+                        <div class="text-muted small">@Model.NomeCompleto</div>
+                    }
+                    <div class="mt-1">
+                        @foreach (var r in roles)
+                        {
+                            <span class="badge rounded-pill bg-light text-dark border me-1">@r</span>
+                        }
+                        @if (Model.Ativo)
+                        { <span class="badge rounded-pill text-bg-success">Ativo</span> }
+                        else
+                        { <span class="badge rounded-pill text-bg-secondary">Inativo</span> }
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-dark btn-sm px-3">Editar</a>
+                <form asp-action="AlternarStatus" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-sm @(Model.Ativo ? "btn-outline-danger" : "btn-outline-success")"
+                            onclick="return confirm('@(Model.Ativo ? "Desativar" : "Ativar") este usuário?');">
+                        @(Model.Ativo ? "Desativar" : "Ativar")
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6"><div class="small text-muted mb-1">E-mail</div><div class="fw-medium">@Model.Email</div></div>
+            <div class="col-md-6"><div class="small text-muted mb-1">CPF</div><div class="fw-medium">@(string.IsNullOrWhiteSpace(Model.Cpf) ? "—" : Model.Cpf)</div></div>
+            <div class="col-md-6"><div class="small text-muted mb-1">Gênero</div><div class="fw-medium">@(Model.Genero ?? "—")</div></div>
+            <div class="col-md-6"><div class="small text-muted mb-1">Etnia / raça</div><div class="fw-medium">@(Model.Etnia ?? "—")</div></div>
+            <div class="col-md-6"><div class="small text-muted mb-1">Cargo</div><div class="fw-medium">@(Model.Cargo ?? "—")</div></div>
+            <div class="col-md-6"><div class="small text-muted mb-1">Salário</div><div class="fw-medium">@(Model.Salario.HasValue ? Model.Salario.Value.ToString("C") : "—")</div></div>
+            <div class="col-md-6"><div class="small text-muted mb-1">Empresa</div><div class="fw-medium">@(Model.Empresa?.NomeFantasia ?? Model.Empresa?.RazaoSocial ?? "—")</div></div>
+            <div class="col-md-6"><div class="small text-muted mb-1">Cadastro</div><div class="fw-medium">@Model.DataCadastro.ToString("dd/MM/yyyy HH:mm")</div></div>
+        </div>
+    </div>
+</div>

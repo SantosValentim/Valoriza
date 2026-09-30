@@ -186,6 +186,7 @@ namespace Valoriza.API.Controllers
 
         /// AdminEmpresa não pode desativar nenhum outro administrador
         [HttpPut("{id}/desativar")]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "AdminValoriza,AdminEmpresa")]
         public async Task<IActionResult> Desativar(string id)
         {

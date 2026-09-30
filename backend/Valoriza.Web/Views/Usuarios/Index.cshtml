@@ -1,58 +1,136 @@
+@* Lista de usuários exibe nome social (se houver), senão exibe nome completo *@
 @model List<(Valoriza.API.Models.ApplicationUser User, IList<string> Roles)>
 @{
-    ViewData["Title"] = "Usuarios";
-    var isAdminValoriza = User.IsInRole("AdminValoriza");
-    var isAdminEmpresa = User.IsInRole("AdminEmpresa") && !isAdminValoriza;
-}
-
-@if (TempData["Erro"] != null)
-{
-    <div class="alert alert-danger">@TempData["Erro"]</div>
+    ViewData["Title"] = "Usuários";
+    var nomes = ViewBag.SugestoesNomes as List<string> ?? new();
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h4 mb-0">Usuarios</h2>
-    <a asp-action="Create" class="btn btn-dark btn-sm">Novo usuario</a>
+    <div>
+        <h2 class="h4 mb-0">Usuários</h2>
+        <p class="text-muted small mb-0">Gestão de contas e papéis</p>
+    </div>
+    <a asp-action="Create" class="btn btn-dark btn-sm px-3">+ Novo usuário</a>
 </div>
 
-<div class="card">
+<form method="get" class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Nome</label>
+                <input type="text" name="nome" class="form-control form-control-sm"
+                       value="@ViewBag.FiltroNome" list="listaNomes" placeholder="Buscar..." autocomplete="off" />
+                <datalist id="listaNomes">
+                    @foreach (var n in nomes) { <option value="@n"></option> }
+                </datalist>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-1">Papel</label>
+                <input type="text" name="papel" class="form-control form-control-sm"
+                       value="@ViewBag.FiltroPapel" list="listaPapeis" />
+                <datalist id="listaPapeis">
+                    <option value="AdminValoriza"></option>
+                    <option value="AdminEmpresa"></option>
+                    <option value="GestorDEI"></option>
+                    <option value="Colaborador"></option>
+                </datalist>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-1">Etnia</label>
+                <input type="text" name="etnia" class="form-control form-control-sm" value="@ViewBag.FiltroEtnia" list="listaEtnias" />
+                <datalist id="listaEtnias">
+                    <option value="Preta"></option><option value="Parda"></option>
+                    <option value="Branca"></option><option value="Indígena"></option><option value="Amarela"></option>
+                </datalist>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-1">Gênero</label>
+                <input type="text" name="genero" class="form-control form-control-sm" value="@ViewBag.FiltroGenero" list="listaGeneros" />
+                <datalist id="listaGeneros">
+                    <option value="Feminino"></option><option value="Masculino"></option><option value="Não-binário"></option>
+                </datalist>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-1">Situação</label>
+                <select name="situacao" class="form-select form-select-sm">
+                    <option value="">Todas</option>
+                    <option value="Ativo">Ativo</option>
+                    <option value="Inativo">Inativo</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-dark btn-sm w-100">Filtrar</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
-                <tr>
-                    <th>Nome</th>
+                <tr class="small text-muted">
+                    <th class="ps-3">Nome</th>
                     <th>E-mail</th>
                     <th>Papel</th>
-                    <th>Ativo</th>
-                    <th>Cadastro</th>
-                    <th></th>
+                    <th>Etnia</th>
+                    <th>Gênero</th>
+                    <th>Situação</th>
+                    <th class="text-end pe-3"></th>
                 </tr>
             </thead>
             <tbody>
             @if (Model == null || !Model.Any())
             {
-                <tr><td colspan="6" class="text-center text-muted py-4">Nenhum usuario.</td></tr>
+                <tr><td colspan="7" class="text-center text-muted py-5">Nenhum usuário encontrado.</td></tr>
             }
             else
             {
                 foreach (var item in Model)
                 {
-                    var isAlvoAdmin = item.Roles.Contains("AdminValoriza") || item.Roles.Contains("AdminEmpresa");
-                    var podeDesativar = item.User.Ativo && !(isAdminEmpresa && isAlvoAdmin); // AdminEmpresa não vê botão em linhas de admin
+                    var nomeExibicao = !string.IsNullOrWhiteSpace(item.User.NomeSocial)
+                        ? item.User.NomeSocial : item.User.NomeCompleto;
+                    var inicial = nomeExibicao.Length >= 1 ? nomeExibicao[..1].ToUpper() : "?";
+
                     <tr>
-                        <td>@item.User.NomeCompleto</td>
-                        <td>@item.User.Email</td>
-                        <td>@string.Join(", ", item.Roles)</td>
-                        <td>@(item.User.Ativo ? "Sim" : "Nao")</td>
-                        <td>@item.User.DataCadastro.ToString("dd/MM/yyyy")</td>
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center gap-2">
+                                @if (!string.IsNullOrEmpty(item.User.FotoUrl))
+                                {
+                                    <img src="@item.User.FotoUrl" alt="" class="rounded-circle border"
+                                         style="width:36px;height:36px;object-fit:cover;flex-shrink:0;" />
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center"
+                                         style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">@inicial</div>
+                                }
+                                <div>
+                                    <div class="fw-semibold">@nomeExibicao</div>
+                                    @if (!string.IsNullOrWhiteSpace(item.User.NomeSocial))
+                                    {
+                                        <div class="small text-muted">@item.User.NomeCompleto</div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td class="small">@item.User.Email</td>
+                        <td>
+                            @foreach (var r in item.Roles)
+                            {
+                                <span class="badge rounded-pill bg-light text-dark border">@r</span>
+                            }
+                        </td>
+                        <td class="small">@(item.User.Etnia ?? "—")</td>
+                        <td class="small">@(item.User.Genero ?? "—")</td>
                         <td>
                             @if (item.User.Ativo)
-                            {
-                                <form asp-action="Desativar" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="@item.User.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Desativar?')">Desativar</button>
-                                </form>
-                            }
+                            { <span class="badge rounded-pill text-bg-success">Ativo</span> }
+                            else
+                            { <span class="badge rounded-pill text-bg-secondary">Inativo</span> }
+                        </td>
+                        <td class="text-end pe-3">
+                            <a asp-action="Details" asp-route-id="@item.User.Id" class="btn btn-sm btn-outline-dark">Exibir</a>
                         </td>
                     </tr>
                 }

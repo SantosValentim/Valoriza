@@ -1,7 +1,15 @@
+@*  Details da Trilha de Treinamento
+   - Barra de progresso do colaborador
+   - Lista de conteúdos (Texto / Video / Quiz)
+   - Admin: editar trilha, + conteúdo, editar/excluir conteúdo
+   - Colaborador: marcar concluído / responder quiz *@
 @model Valoriza.API.Models.TrilhaTreinamento
 @{
     ViewData["Title"] = Model.Titulo;
-    var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
+    var podeEditar = (bool)(ViewBag.PodeEditar ?? false);
+    var progresso = ViewBag.Progresso as Valoriza.API.Models.ProgressoTreinamento;
+    var concluidos = ViewBag.ConcluidosIds as HashSet<int> ?? new HashSet<int>();
+    var pct = progresso?.PercentualConcluido ?? 0;
 }
 
 <div class="mb-3">
@@ -13,12 +21,13 @@
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
         <div>
             <h2 class="h4">@Model.Titulo</h2>
-            <p class="text-muted">@Model.Descricao</p>
+            <p class="text-muted mb-2">@Model.Descricao</p>
             <span class="badge bg-secondary">@Model.Nivel</span>
             <span class="badge bg-light text-dark">@Model.CargaHoraria min</span>
+            <span class="badge bg-light text-dark">@(Model.Conteudos?.Count ?? 0) conteúdos</span>
         </div>
 
-        @if (isAdmin)
+        @if (podeEditar)
         {
             <div class="d-flex gap-2">
                 <a asp-action="Edit" asp-route-id="@Model.Id"
@@ -28,8 +37,20 @@
             </div>
         }
     </div>
+
+    @* Barra de progresso do colaborador *@
+    <div class="mt-3">
+        <div class="d-flex justify-content-between small mb-1">
+            <span>Seu progresso</span>
+            <span>@pct%</span>
+        </div>
+        <div class="progress" style="height:10px;">
+            <div class="progress-bar bg-dark" style="width:@pct%"></div>
+        </div>
+    </div>
 </div>
 
+@* Lista de conteúdos *@
 <h3 class="h5 mb-3">Conteúdos</h3>
 
 @if (Model.Conteudos == null || !Model.Conteudos.Any())
@@ -41,34 +62,96 @@ else
     <div class="list-group mb-4">
         @foreach (var c in Model.Conteudos.OrderBy(x => x.Ordem))
         {
+            var jaFeito = concluidos.Contains(c.Id);
+
             <div class="list-group-item">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                    <div>
-                        <div class="fw-semibold">@c.Ordem. @c.Titulo</div>
-                        <div class="small text-muted">
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">
+                            @c.Ordem. @c.Titulo
+                            @if (jaFeito)
+                            {
+                                <span class="badge bg-success">Concluído</span>
+                            }
+                        </div>
+                        <div class="small text-muted mb-1">
                             <span class="badge bg-light text-dark">@c.Tipo</span>
                             @c.DuracaoMinutos min
                         </div>
 
                         @if (!string.IsNullOrEmpty(c.Texto))
                         {
-                            <p class="mt-2 mb-0 small">@c.Texto</p>
+                            <p class="mb-1 small">
+                                @if (c.Tipo == "Quiz")
+                                {
+                                    <strong>Pergunta:</strong>
+                                }
+                                @c.Texto
+                            </p>
                         }
 
                         @if (!string.IsNullOrEmpty(c.UrlVideo))
                         {
                             <a href="@c.UrlVideo" target="_blank" class="small">Assistir vídeo</a>
                         }
+
+                        @* Opções do quiz *@
+                        @if (c.Tipo == "Quiz")
+                        {
+                            <ul class="small mb-1">
+                                <li><strong>A)</strong> @c.OpcaoA</li>
+                                <li><strong>B)</strong> @c.OpcaoB</li>
+                                <li><strong>C)</strong> @c.OpcaoC</li>
+                                <li><strong>D)</strong> @c.OpcaoD</li>
+                            </ul>
+                            @if (podeEditar)
+                            {
+                                <span class="badge bg-success">Correta: @c.RespostaCorreta</span>
+                            }
+                        }
+
+                        @* Concluir (colaborador / qualquer logado) *@
+                        @if (!jaFeito && !podeEditar)
+                        {
+                            @if (c.Tipo == "Quiz")
+                            {
+                                <form asp-action="ConcluirConteudo" method="post" class="mt-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="conteudoId" value="@c.Id" />
+                                    <input type="hidden" name="trilhaId" value="@Model.Id" />
+                                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                                        <select name="respostaQuiz" class="form-select form-select-sm" style="width:auto;" required>
+                                            <option value="">Resposta</option>
+                                            <option value="A">A</option>
+                                            <option value="B">B</option>
+                                            <option value="C">C</option>
+                                            <option value="D">D</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-dark">Enviar</button>
+                                    </div>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="ConcluirConteudo" method="post" class="mt-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="conteudoId" value="@c.Id" />
+                                    <input type="hidden" name="trilhaId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-dark">Marcar como concluído</button>
+                                </form>
+                            }
+                        }
                     </div>
 
-                    @if (isAdmin)
+                    @* Botões Admin / Gestor DEI *@
+                    @if (podeEditar)
                     {
                         <div class="d-flex gap-1">
                             <a asp-action="EditConteudo" asp-route-id="@c.Id"
                                class="btn btn-sm btn-outline-secondary">Editar</a>
-
                             <form asp-action="DeleteConteudo" method="post"
                                   onsubmit="return confirm('Excluir este conteúdo?');">
+                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@c.Id" />
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
                             </form>

@@ -1,58 +1,131 @@
-@* Formulário de cadastro de usuário (Admin) *@
-
+@*  Formulário de cadastro de usuário *@
 @{
     ViewData["Title"] = "Novo Usuário";
+    var isAdminValoriza = (bool)(ViewBag.IsAdminValoriza ?? false);
+    var empresas = ViewBag.Empresas as List<Valoriza.API.Models.Empresa> ?? new();
 }
 
 <div class="mb-3">
     <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
 </div>
 
-<div class="card p-4 col-md-7">
+<div class="card border-0 shadow-sm p-4 col-lg-8">
     <h3 class="h5 mb-3">Cadastrar usuário</h3>
+    @if (ViewBag.Erro != null) { <div class="alert alert-danger">@ViewBag.Erro</div> }
 
-    @* Erro vindo do Controller *@
-    @if (ViewBag.Erro != null)
-    {
-        <div class="alert alert-danger">@ViewBag.Erro</div>
-    }
+    <form method="post" asp-action="Create" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Foto do perfil</label>
+            <input type="file" name="foto" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp" />
+            <div class="form-text">JPG, PNG, GIF ou WebP · máx. 2 MB</div>
+        </div>
 
-    <form method="post" asp-action="Create">
-        <div class="mb-3">
-            <label class="form-label">Nome completo</label>
-            <input type="text" name="nomeCompleto" class="form-control" required />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">E-mail</label>
-            <input type="email" name="email" class="form-control" required />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Senha</label>
-            <input type="password" name="senha" class="form-control" required minlength="6" />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">CPF (opcional)</label>
-            <input type="text" name="cpf" class="form-control" maxlength="14" />
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Nome completo *</label>
+                <input type="text" name="nomeCompleto" class="form-control" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Nome social</label>
+                <input type="text" name="nomeSocial" class="form-control" />
+            </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="form-label">Papel</label>
-                <select name="role" class="form-select">
-                    <option value="Colaborador">Colaborador</option>
-                    <option value="GestorDEI">Gestor DEI</option>
-                    <option value="AdminEmpresa">Admin Empresa</option>
-                    @* Só AdminValoriza pode criar outro AdminValoriza *@
-                    @if (User.IsInRole("AdminValoriza"))
+                <label class="form-label">E-mail *</label>
+                <input type="email" name="email" class="form-control" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Senha *</label>
+                <input type="password" name="senha" class="form-control" required minlength="6" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">CPF</label>
+                <input type="text" name="cpf" class="form-control" maxlength="14" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Gênero</label>
+                <select name="genero" class="form-select">
+                    <option value="">— Selecione —</option>
+                    <option>Feminino</option><option>Masculino</option>
+                    <option>Não-binário</option><option>Prefere não informar</option><option>Outro</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3" id="campoEtnia">
+                <label class="form-label">Etnia / raça</label>
+                <select name="etnia" class="form-select">
+                    <option value="">— Selecione —</option>
+                    <option>Preta</option><option>Parda</option><option>Branca</option>
+                    <option>Indígena</option><option>Amarela</option><option>Prefere não informar</option>
+                </select>
+            </div>
+        </div>
+        <div class="row" id="blocoRh">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Cargo</label>
+                <input type="text" name="cargo" class="form-control" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Salário (R$)</label>
+                <input type="number" name="salario" class="form-control" step="0.01" min="0" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Papel *</label>
+                <select name="role" id="roleSelect" class="form-select" required onchange="ajustarFormulario()">
+                    @if (isAdminValoriza)
                     {
                         <option value="AdminValoriza">Admin Valoriza</option>
+                        <option value="AdminEmpresa">Admin Empresa (cliente)</option>
+                        <option value="GestorDEI">Gestor DEI</option>
+                        <option value="Colaborador">Colaborador</option>
+                    }
+                    else
+                    {
+                        <option value="Colaborador">Colaborador</option>
+                        <option value="GestorDEI">Gestor DEI</option>
+                        <option value="AdminEmpresa">Admin Empresa</option>
                     }
                 </select>
             </div>
             <div class="col-md-6 mb-3">
-                <label class="form-label">Empresa ID</label>
-                <input type="number" name="empresaId" class="form-control" value="1" />
+                @if (!isAdminValoriza)
+                {
+                    <label class="form-label">Empresa</label>
+                    <input type="text" class="form-control" value="@(ViewBag.EmpresaNome ?? "Sua empresa")" readonly />
+                    <input type="hidden" name="empresaId" value="@ViewBag.EmpresaIdFixa" />
+                }
+                else
+                {
+                    <div id="selectEmpresaCliente" style="display:none;">
+                        <label class="form-label">Empresa cliente *</label>
+                        <select name="empresaId" class="form-select">
+                            <option value="">— Selecione —</option>
+                            @foreach (var e in empresas)
+                            {
+                                <option value="@e.Id">@(e.NomeFantasia ?? e.RazaoSocial)</option>
+                            }
+                        </select>
+                    </div>
+                }
             </div>
         </div>
         <button type="submit" class="btn btn-dark">Cadastrar</button>
     </form>
 </div>
+
+<script>
+    function ajustarFormulario() {
+        var role = document.getElementById('roleSelect').value;
+        var isAdminValoriza = @(isAdminValoriza ? "true" : "false");
+        var esconderRh = isAdminValoriza && role === 'AdminEmpresa';
+        document.getElementById('campoEtnia').style.display = esconderRh ? 'none' : '';
+        document.getElementById('blocoRh').style.display = esconderRh ? 'none' : '';
+        var emp = document.getElementById('selectEmpresaCliente');
+        if (emp) emp.style.display = (isAdminValoriza && role === 'AdminEmpresa') ? 'block' : 'none';
+    }
+    document.addEventListener('DOMContentLoaded', ajustarFormulario);
+</script>

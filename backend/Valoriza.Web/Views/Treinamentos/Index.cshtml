@@ -1,15 +1,14 @@
+@* Lista de trilhas de treinamento
+   PodeEditar = AdminValoriza | AdminEmpresa | GestorDEI *@
 @model List<Valoriza.API.Models.TrilhaTreinamento>
 @{
     ViewData["Title"] = "Treinamentos";
-    // true se AdminValoriza ou AdminEmpresa (vem do Controller)
-    var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
+    var podeEditar = (bool)(ViewBag.PodeEditar ?? false);
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="h4 mb-0">Trilhas de Treinamento</h2>
-
-    @* Botão "Nova trilha" só para Admin *@
-    @if (isAdmin)
+    @if (podeEditar)
     {
         <a asp-action="Create" class="btn btn-dark btn-sm">Nova trilha</a>
     }
@@ -46,19 +45,19 @@ else
                     </div>
 
                     <div class="d-flex gap-2 flex-wrap">
-                        @* Todos os logados podem abrir a trilha *@
+                        @* Todos abrem a trilha *@
                         <a asp-action="Details" asp-route-id="@t.Id" class="btn btn-dark btn-sm">
                             Abrir
                         </a>
 
-                        @* Só Admin edita e exclui *@
-                        @if (isAdmin)
+                        @if (podeEditar)
                         {
                             <a asp-action="Edit" asp-route-id="@t.Id"
                                class="btn btn-outline-secondary btn-sm">Editar</a>
 
                             <form asp-action="Delete" method="post" class="d-inline"
                                   onsubmit="return confirm('Excluir esta trilha e todos os conteúdos?');">
+                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@t.Id" />
                                 <button type="submit" class="btn btn-outline-danger btn-sm">Excluir</button>
                             </form>

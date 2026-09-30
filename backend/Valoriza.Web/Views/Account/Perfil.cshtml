@@ -1,0 +1,75 @@
+@* Painel do usuário (nome social, gênero, etnia) *@
+@model Valoriza.API.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Meu perfil";
+    var nomeExibicao = !string.IsNullOrWhiteSpace(Model.NomeSocial)
+        ? Model.NomeSocial
+        : Model.NomeCompleto;
+}
+
+<div class="card p-4 col-md-7">
+    <h2 class="h5 mb-3">Dados do perfil</h2>
+
+    <p class="small text-muted mb-3">
+        Papel: <strong>@ViewBag.Roles</strong><br />
+        Nome de registro: <strong>@Model.NomeCompleto</strong><br />
+        Como aparece no painel: <strong>@nomeExibicao</strong>
+    </p>
+
+    @if (ViewBag.Erro != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Erro</div>
+    }
+
+    <form method="post" asp-action="Perfil">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label class="form-label">Nome social</label>
+            <input type="text" name="nomeSocial" class="form-control"
+                   value="@Model.NomeSocial"
+                   placeholder="Como prefere ser chamado(a) no painel" />
+            <div class="form-text">
+                Se preenchido, este nome aparece no menu e nas listagens no lugar do nome completo.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Gênero</label>
+            <select name="genero" class="form-select">
+                <option value="">— Selecione —</option>
+                @foreach (var g in new[] { "Feminino", "Masculino", "Não-binário", "Prefere não informar", "Outro" })
+                {
+                    if (Model.Genero == g)
+                    {
+                        <option value="@g" selected>@g</option>
+                    }
+                    else
+                    {
+                        <option value="@g">@g</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Etnia / raça</label>
+            <select name="etnia" class="form-select">
+                <option value="">— Selecione —</option>
+                @foreach (var e in new[] { "Preta", "Parda", "Branca", "Indígena", "Amarela", "Prefere não informar" })
+                {
+                    if (Model.Etnia == e)
+                    {
+                        <option value="@e" selected>@e</option>
+                    }
+                    else
+                    {
+                        <option value="@e">@e</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-dark">Salvar perfil</button>
+    </form>
+</div>

@@ -1,13 +1,13 @@
-/* ============================================================
-   Ponto de entrada do aplicativo Valoriza
-   Autor: Oliver Valentim Carvalho Santos - RA 2632071
-   ============================================================ */
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/home_shell.dart';
 import 'services/auth_service.dart';
+
+void main() {
+  HttpOverrides.global = MyHttpOverrides();
+  runApp(const ValorizaApp());
+}
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -17,70 +17,37 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-void main() {
-  HttpOverrides.global = MyHttpOverrides();
-  runApp(const ValorizaApp());
-}
-
 class ValorizaApp extends StatelessWidget {
   const ValorizaApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Valoriza',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1A1A2E)),
-        useMaterial3: true,
-      ),
-      home: const SplashScreen(),
+      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1a1a2e)), useMaterial3: true),
+      home: const SplashGate(),
     );
   }
 }
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
+class SplashGate extends StatefulWidget {
+  const SplashGate({super.key});
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  State<SplashGate> createState() => _SplashGateState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashGateState extends State<SplashGate> {
   @override
   void initState() {
     super.initState();
-    _verificarLogin();
-  }
-
-  Future<void> _verificarLogin() async {
-    final auth = AuthService();
-    final logado = await auth.isAuthenticated();
-    await Future.delayed(const Duration(seconds: 1));
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => logado ? const HomeScreen() : const LoginScreen(),
-      ),
-    );
+    AuthService().getToken().then((t) {
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => t != null ? const HomeShell() : const LoginScreen()),
+      );
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Valoriza', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text('Diversidade • Equidade • Inclusão'),
-            SizedBox(height: 24),
-            CircularProgressIndicator(),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const Scaffold(body: Center(child: CircularProgressIndicator()));
 }

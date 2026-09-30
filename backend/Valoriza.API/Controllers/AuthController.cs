@@ -25,7 +25,7 @@ namespace Valoriza.API.Controllers
             _config = config;
         }
 
-        /// <summary> Realiza login e devolve token JWT + dados do usuário </summary>
+        /// Realiza login e devolve token JWT + dados do usuário
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO request)

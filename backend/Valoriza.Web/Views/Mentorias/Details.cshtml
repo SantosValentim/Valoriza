@@ -1,0 +1,170 @@
+@* Detalhe do programa + fórum (posts, mídia, respostas) *@
+@model Valoriza.API.Models.MentoriaPrograma
+@{
+    ViewData["Title"] = Model.Titulo;
+    var isMentor = (bool)(ViewBag.IsMentor ?? false);
+    var isInscrito = (bool)(ViewBag.IsInscrito ?? false);
+    var podeGerenciar = (bool)(ViewBag.PodeGerenciar ?? false);
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Voltar</a>
+</div>
+
+@if (TempData["Erro"] != null)
+{
+    <div class="alert alert-danger">@TempData["Erro"]</div>
+}
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alert alert-success">@TempData["Sucesso"]</div>
+}
+
+@* Cabeçalho do programa *@
+<div class="card p-4 mb-4">
+    <h2 class="h4">@Model.Titulo</h2>
+    <p class="text-muted">@Model.Objetivos</p>
+    <p class="small mb-2">
+        <strong>Mentor:</strong> @(Model.Mentor?.NomeCompleto ?? "—")
+        · <strong>Status:</strong> @Model.Status
+        · <strong>Inscritos:</strong> @(Model.Inscricoes?.Count(i => i.Status == "Ativa") ?? 0)
+    </p>
+
+    @* Botão de inscrição para colaborador que ainda não é mentor nem inscrito *@
+    @if (!isMentor && !isInscrito)
+    {
+        <form asp-action="Inscrever" method="post">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="btn btn-dark btn-sm">Inscrever-me como mentorado</button>
+        </form>
+    }
+    else if (isInscrito)
+    {
+        <span class="badge bg-success">Você está inscrito</span>
+    }
+    else if (isMentor)
+    {
+        <span class="badge bg-primary">Você é o mentor deste programa</span>
+    }
+
+    @* Lista resumida de mentorados (visível para mentor/gestores) *@
+    @if ((isMentor || podeGerenciar) && Model.Inscricoes != null && Model.Inscricoes.Any())
+    {
+        <hr />
+        <h6 class="h6">Mentorados inscritos</h6>
+        <ul class="small mb-0">
+            @foreach (var i in Model.Inscricoes.Where(x => x.Status == "Ativa"))
+            {
+                <li>@(i.Mentorado?.NomeCompleto ?? i.MentoradoId)
+                    <span class="text-muted">· @i.DataInscricao.ToString("dd/MM/yyyy")</span>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@* Formulário de publicação (mentor ou gestores) *@
+@if (isMentor || podeGerenciar)
+{
+    <div class="card p-4 mb-4">
+        <h5 class="h6 mb-3">Publicar no fórum</h5>
+        <form asp-action="CriarPost" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="programaId" value="@Model.Id" />
+
+            <div class="mb-2">
+                <input type="text" name="titulo" class="form-control" placeholder="Título do post" required />
+            </div>
+            <div class="mb-2">
+                <textarea name="conteudo" class="form-control" rows="3"
+                          placeholder="Conteúdo, notícia, orientação, resumo de palestra..."></textarea>
+            </div>
+            <div class="mb-2">
+                <input type="url" name="urlLink" class="form-control"
+                       placeholder="Link (notícia, palestra, vídeo externo)" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label small">Anexar foto ou vídeo (opcional)</label>
+                <input type="file" name="arquivo" class="form-control"
+                       accept="image/*,video/mp4,video/webm" />
+            </div>
+            <button type="submit" class="btn btn-dark btn-sm">Publicar</button>
+        </form>
+    </div>
+}
+
+@* Fórum: lista de posts *@
+<h5 class="h6 mb-3">Fórum</h5>
+
+@if (Model.Posts == null || !Model.Posts.Any())
+{
+    <div class="alert alert-light border">Nenhuma publicação ainda.</div>
+}
+else
+{
+    foreach (var p in Model.Posts.OrderByDescending(x => x.DataPublicacao))
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between flex-wrap gap-1">
+                    <strong>@p.Titulo</strong>
+                    <span class="small text-muted">@p.DataPublicacao.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+                <div class="small text-muted mb-2">@(p.Autor?.NomeCompleto ?? "Autor")</div>
+
+                @if (!string.IsNullOrEmpty(p.Conteudo))
+                {
+                    <p class="mb-2">@p.Conteudo</p>
+                }
+
+                @if (!string.IsNullOrEmpty(p.UrlLink))
+                {
+                    <p class="mb-2">
+                        <a href="@p.UrlLink" target="_blank" rel="noopener">Abrir link</a>
+                    </p>
+                }
+
+                @* Mídia anexada *@
+                @if (p.TipoMidia == "Imagem" && !string.IsNullOrEmpty(p.UrlMidia))
+                {
+                    <div class="mb-2">
+                        <img src="@p.UrlMidia" alt="" class="img-fluid rounded" style="max-height:280px;" />
+                    </div>
+                }
+                @if (p.TipoMidia == "Video" && !string.IsNullOrEmpty(p.UrlMidia))
+                {
+                    <div class="mb-2">
+                        <video src="@p.UrlMidia" controls class="w-100 rounded" style="max-height:320px;"></video>
+                    </div>
+                }
+
+                <hr />
+
+                @* Respostas *@
+                @if (p.Respostas != null)
+                {
+                    foreach (var r in p.Respostas.OrderBy(x => x.Data))
+                    {
+                        <div class="small mb-2 ps-2 border-start">
+                            <strong>@(r.Autor?.NomeCompleto ?? "Usuário")</strong>
+                            <span class="text-muted">· @r.Data.ToString("dd/MM HH:mm")</span>
+                            <div>@r.Texto</div>
+                        </div>
+                    }
+                }
+
+                @* Responder: mentor, inscrito ou gestor *@
+                @if (isMentor || isInscrito || podeGerenciar)
+                {
+                    <form asp-action="Responder" method="post" class="mt-2">
+                        <input type="hidden" name="postId" value="@p.Id" />
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="texto" class="form-control"
+                                   placeholder="Escreva uma resposta..." required />
+                            <button class="btn btn-outline-dark" type="submit">Enviar</button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+}

@@ -1,6 +1,14 @@
-@* Layout principal do painel Valoriza
-   Menu com ordem FIXA em todas as páginas:
-   Dashboard -> Treinamentos -> Denúncias -> Indicadores -> Usuários *@
+@* Layout principal com menu com ordem fixa:
+   Dashboard (Admin/Gestor) -> Treinamentos -> Mentorias -> Denúncias ->
+   Indicadores (Admin/Gestor) -> Empresas -> Churn (AdminValoriza) ->
+   Usuários (Admins)
+   Colaborador: Treinamentos, Mentorias, Denúncias + avatar
+   Direita: avatar + nome -> Painel | Alterar senha | Sair *@
+
+@using Microsoft.AspNetCore.Identity
+@using Valoriza.API.Models
+@inject UserManager<ApplicationUser> UserManager
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -12,63 +20,177 @@
         body { background: #f5f6fa; }
         .navbar-brand { font-weight: 700; }
         .card { border: none; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+        #menuUsuario::after { margin-left: .35rem; }
+        .navbar .dropdown-menu { min-width: 12rem; }
     </style>
 </head>
 <body>
+
+@{
+    // Dados do usuário logado (calculados uma vez)
+    ApplicationUser? appUser = null;
+    string nomeExibicao = User.Identity?.Name ?? "Usuário";
+    string iniciais = "?";
+    string? fotoUrl = null;
+
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        appUser = await UserManager.GetUserAsync(User);
+        if (appUser != null)
+        {
+            nomeExibicao = !string.IsNullOrWhiteSpace(appUser.NomeSocial)
+                ? appUser.NomeSocial
+                : appUser.NomeCompleto;
+
+            fotoUrl = appUser.FotoUrl;
+
+            iniciais = string.Join("",
+                nomeExibicao
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    .Take(2)
+                    .Select(p => char.ToUpperInvariant(p[0])));
+        }
+    }
+
+    var isGestorOuAdmin =
+        User.IsInRole("AdminValoriza") ||
+        User.IsInRole("AdminEmpresa") ||
+        User.IsInRole("GestorDEI");
+}
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
         <a class="navbar-brand" asp-controller="Home" asp-action="Index">Valoriza</a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#nav"
+                aria-controls="nav" aria-expanded="false" aria-label="Menu">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="nav">
+
+            @* MENU ESQUERDO (ordem fixa) *@
             <ul class="navbar-nav me-auto">
-                @* Só mostra o menu se o usuário estiver autenticado *@
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    @* ORDEM FIXA *@
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Index">Dashboard</a>
-                    </li>
+                    @* Dashboard – Admin / Gestor *@
+                    @if (isGestorOuAdmin)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Dashboard</a>
+                        </li>
+                    }
 
+                    @* Treinamentos – todos autenticados *@
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Treinamentos" asp-action="Index">Treinamentos</a>
                     </li>
 
-                    @* Gestor DEI e Admins: Denúncias + Indicadores *@
-                    @if (User.IsInRole("AdminValoriza")
-                      || User.IsInRole("AdminEmpresa")
-                      || User.IsInRole("GestorDEI"))
+                    @* Mentorias – todos autenticados *@
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Mentorias" asp-action="Index">Mentorias</a>
+                    </li>
+
+                    @* Denúncias – todos autenticados (colaborador só vê as próprias) *@
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Denuncias" asp-action="Index">Denúncias</a>
+                    </li>
+
+                    @* Indicadores – Admin / Gestor *@
+                    @if (isGestorOuAdmin)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Denuncias" asp-action="Index">Denúncias</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Indicadores" asp-action="Index">Indicadores</a>
                         </li>
                     }
 
-                    @* Somente Admins: Usuários *@
+                    @* Empresas + Churn – só AdminValoriza *@
+                    @if (User.IsInRole("AdminValoriza"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Empresas" asp-action="Index">Empresas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Churn" asp-action="Index">Churn</a>
+                        </li>
+                    }
+
+                    @* Usuários – Admins *@
                     @if (User.IsInRole("AdminValoriza") || User.IsInRole("AdminEmpresa"))
                     {
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Usuarios" asp-action="Index">Usuários</a>
                         </li>
                     }
+                    
+                    @if (isGestorOuAdmin)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Relatorios" asp-action="Index">Relatórios</a>
+                        </li>
+                    }
+
+                    @* Comunicação inclusiva – apenas Gestor DEI *@
+                    @if (User.IsInRole("GestorDEI"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="ComunicacaoInclusiva" asp-action="Index">
+                                Comunicação Inclusiva
+                            </a>
+                        </li>
+                    }
                 }
             </ul>
 
-            <ul class="navbar-nav">
+            @* MENU DIREITO: avatar + dropdown *@
+            <ul class="navbar-nav ms-auto align-items-center">
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    @* Nome/e-mail do usuário logado *@
-                    <li class="nav-item">
-                        <span class="nav-link text-white-50">@User.Identity.Name</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Account" asp-action="Logout">Sair</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 py-1"
+                           href="#" id="menuUsuario" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+
+                            @if (!string.IsNullOrEmpty(fotoUrl))
+                            {
+                                <img src="@fotoUrl" alt="Foto"
+                                     class="rounded-circle border border-secondary"
+                                     width="32" height="32"
+                                     style="object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <span class="rounded-circle d-inline-flex align-items-center justify-content-center
+                                             bg-secondary text-white fw-semibold"
+                                      style="width:32px;height:32px;font-size:12px;">
+                                    @iniciais
+                                </span>
+                            }
+
+                            <span class="text-white">@nomeExibicao</span>
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow"
+                            aria-labelledby="menuUsuario">
+                            <li>
+                                <a class="dropdown-item" asp-controller="Account" asp-action="Perfil">
+                                    Painel do usuário
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Account" asp-action="AlterarSenha">
+                                    Alterar senha
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <a class="dropdown-item text-danger"
+                                   asp-controller="Account" asp-action="Logout">
+                                    Sair
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 }
                 else
@@ -83,13 +205,21 @@
 </nav>
 
 <main class="container pb-5">
-    @* Mensagem de sucesso (ex.: usuário criado) *@
     @if (TempData["Sucesso"] != null)
     {
-        <div class="alert alert-success">@TempData["Sucesso"]</div>
+        <div id="alertaSucesso" class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Sucesso"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        </div>
+    }
+    @if (TempData["Erro"] != null)
+    {
+        <div id="alertaErro" class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Erro"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        </div>
     }
 
-    @* Conteúdo de cada página *@
     @RenderBody()
 </main>
 
@@ -98,6 +228,24 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-@RenderSection("Scripts", required: false)
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function fecharAlerta(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            setTimeout(function () {
+                if (window.bootstrap && bootstrap.Alert) {
+                    bootstrap.Alert.getOrCreateInstance(el).close();
+                } else {
+                    el.remove();
+                }
+            }, 10000);
+        }
+        fecharAlerta('alertaSucesso');
+        fecharAlerta('alertaErro');
+    });
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

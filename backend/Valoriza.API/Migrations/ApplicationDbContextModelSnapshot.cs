@@ -166,6 +166,10 @@ namespace Valoriza.API.Migrations
                     b.Property<bool>("Ativo")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Cargo")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -187,6 +191,18 @@ namespace Valoriza.API.Migrations
                     b.Property<int?>("EmpresaId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Etnia")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("FotoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Genero")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -195,6 +211,10 @@ namespace Valoriza.API.Migrations
 
                     b.Property<string>("NomeCompleto")
                         .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("NomeSocial")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
@@ -214,6 +234,10 @@ namespace Valoriza.API.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<decimal?>("Salario")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -240,6 +264,111 @@ namespace Valoriza.API.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Valoriza.API.Models.AuditoriaLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Acao")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTime>("DataUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Detalhes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Entidade")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("EntidadeId")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Ip")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("UsuarioEmail")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditoriaLogs");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.ChecklistInclusivoConclusao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataReferencia")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.HasIndex("ItemId", "UsuarioId", "DataReferencia")
+                        .IsUnique();
+
+                    b.ToTable("ChecklistInclusivoConclusoes");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.ChecklistInclusivoItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Contexto")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int>("Ordem")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ChecklistInclusivoItens");
+                });
+
             modelBuilder.Entity("Valoriza.API.Models.Conteudo", b =>
                 {
                     b.Property<int>("Id")
@@ -251,8 +380,28 @@ namespace Valoriza.API.Migrations
                     b.Property<int>("DuracaoMinutos")
                         .HasColumnType("int");
 
+                    b.Property<string>("OpcaoA")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OpcaoB")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OpcaoC")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OpcaoD")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("Ordem")
                         .HasColumnType("int");
+
+                    b.Property<string>("RespostaCorreta")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
 
                     b.Property<string>("Texto")
                         .HasColumnType("nvarchar(max)");
@@ -279,6 +428,41 @@ namespace Valoriza.API.Migrations
                     b.ToTable("Conteudos");
                 });
 
+            modelBuilder.Entity("Valoriza.API.Models.ConteudoProgresso", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Acertou")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ConteudoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataConclusao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RespostaQuiz")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConteudoId");
+
+                    b.HasIndex("UsuarioId", "ConteudoId")
+                        .IsUnique();
+
+                    b.ToTable("ConteudosProgresso");
+                });
+
             modelBuilder.Entity("Valoriza.API.Models.Denuncia", b =>
                 {
                     b.Property<int>("Id")
@@ -290,34 +474,40 @@ namespace Valoriza.API.Migrations
                     b.Property<bool>("Anonima")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Categoria")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.Property<DateTime>("DataRegistro")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DataResolucao")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("EmpresaId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ObservacoesInternas")
+                    b.Property<string>("Observacoes")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Protocolo")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Relato")
                         .IsRequired()
-                        .HasMaxLength(3000)
-                        .HasColumnType("nvarchar(3000)");
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
-                    b.Property<string>("Tipo")
+                    b.Property<string>("Titulo")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("UsuarioId")
                         .HasColumnType("nvarchar(450)");
@@ -327,8 +517,7 @@ namespace Valoriza.API.Migrations
                     b.HasIndex("EmpresaId");
 
                     b.HasIndex("Protocolo")
-                        .IsUnique()
-                        .HasFilter("[Protocolo] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("UsuarioId");
 
@@ -346,13 +535,25 @@ namespace Valoriza.API.Migrations
                     b.Property<bool>("Ativa")
                         .HasColumnType("bit");
 
+                    b.Property<string>("CicloCobranca")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Cnpj")
                         .IsRequired()
                         .HasMaxLength(18)
                         .HasColumnType("nvarchar(18)");
 
-                    b.Property<DateTime>("DataCadastro")
+                    b.Property<DateTime?>("DataChurn")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataInicioAssinatura")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MotivoChurn")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("NomeFantasia")
                         .HasMaxLength(200)
@@ -373,6 +574,15 @@ namespace Valoriza.API.Migrations
                     b.Property<string>("Segmento")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("StatusAssinatura")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<decimal>("ValorAssinatura")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -480,6 +690,194 @@ namespace Valoriza.API.Migrations
                     b.HasIndex("MentoradoId");
 
                     b.ToTable("Mentorias");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaInscricao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataInscricao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MentoradoId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("MentoriaProgramaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MentoradoId");
+
+                    b.HasIndex("MentoriaProgramaId", "MentoradoId")
+                        .IsUnique();
+
+                    b.ToTable("MentoriaInscricoes");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaPost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AutorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Conteudo")
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DataPublicacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MentoriaProgramaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TipoMidia")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UrlLink")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("UrlMidia")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AutorId");
+
+                    b.HasIndex("MentoriaProgramaId");
+
+                    b.ToTable("MentoriaPosts");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaPrograma", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("DataFim")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MentorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Objetivos")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
+
+                    b.HasIndex("MentorId");
+
+                    b.ToTable("MentoriaProgramas");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaResposta", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AutorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Data")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MentoriaPostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(3000)
+                        .HasColumnType("nvarchar(3000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AutorId");
+
+                    b.HasIndex("MentoriaPostId");
+
+                    b.ToTable("MentoriaRespostas");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.OrientacaoInclusiva", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Ativa")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Conteudo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Ordem")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OrientacoesInclusivas");
                 });
 
             modelBuilder.Entity("Valoriza.API.Models.ProgressoTreinamento", b =>
@@ -619,6 +1017,25 @@ namespace Valoriza.API.Migrations
                     b.Navigation("Empresa");
                 });
 
+            modelBuilder.Entity("Valoriza.API.Models.ChecklistInclusivoConclusao", b =>
+                {
+                    b.HasOne("Valoriza.API.Models.ChecklistInclusivoItem", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Valoriza.API.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("Valoriza.API.Models.Conteudo", b =>
                 {
                     b.HasOne("Valoriza.API.Models.TrilhaTreinamento", "Trilha")
@@ -628,6 +1045,25 @@ namespace Valoriza.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Trilha");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.ConteudoProgresso", b =>
+                {
+                    b.HasOne("Valoriza.API.Models.Conteudo", "Conteudo")
+                        .WithMany()
+                        .HasForeignKey("ConteudoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Valoriza.API.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conteudo");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Valoriza.API.Models.Denuncia", b =>
@@ -686,6 +1122,82 @@ namespace Valoriza.API.Migrations
                     b.Navigation("Mentorado");
                 });
 
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaInscricao", b =>
+                {
+                    b.HasOne("Valoriza.API.Models.ApplicationUser", "Mentorado")
+                        .WithMany()
+                        .HasForeignKey("MentoradoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Valoriza.API.Models.MentoriaPrograma", "Programa")
+                        .WithMany("Inscricoes")
+                        .HasForeignKey("MentoriaProgramaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mentorado");
+
+                    b.Navigation("Programa");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaPost", b =>
+                {
+                    b.HasOne("Valoriza.API.Models.ApplicationUser", "Autor")
+                        .WithMany()
+                        .HasForeignKey("AutorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Valoriza.API.Models.MentoriaPrograma", "Programa")
+                        .WithMany("Posts")
+                        .HasForeignKey("MentoriaProgramaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Autor");
+
+                    b.Navigation("Programa");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaPrograma", b =>
+                {
+                    b.HasOne("Valoriza.API.Models.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Valoriza.API.Models.ApplicationUser", "Mentor")
+                        .WithMany()
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
+
+                    b.Navigation("Mentor");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaResposta", b =>
+                {
+                    b.HasOne("Valoriza.API.Models.ApplicationUser", "Autor")
+                        .WithMany()
+                        .HasForeignKey("AutorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Valoriza.API.Models.MentoriaPost", "Post")
+                        .WithMany("Respostas")
+                        .HasForeignKey("MentoriaPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Autor");
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("Valoriza.API.Models.ProgressoTreinamento", b =>
                 {
                     b.HasOne("Valoriza.API.Models.TrilhaTreinamento", "Trilha")
@@ -736,6 +1248,18 @@ namespace Valoriza.API.Migrations
                     b.Navigation("Trilhas");
 
                     b.Navigation("Usuarios");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaPost", b =>
+                {
+                    b.Navigation("Respostas");
+                });
+
+            modelBuilder.Entity("Valoriza.API.Models.MentoriaPrograma", b =>
+                {
+                    b.Navigation("Inscricoes");
+
+                    b.Navigation("Posts");
                 });
 
             modelBuilder.Entity("Valoriza.API.Models.TrilhaTreinamento", b =>

@@ -1,6 +1,4 @@
-/* ============================================================
-   IndicadoresController – Indicadores de diversidade
-   ============================================================ */
+/* Indicadores de diversidade */
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

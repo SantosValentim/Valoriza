@@ -1,0 +1,150 @@
+@* Controle de Churn *@
+@model List<Valoriza.API.Models.Empresa>
+@{
+    ViewData["Title"] = "Controle de Churn";
+}
+
+<h2 class="h4 mb-3">Controle de Churn</h2>
+<p class="text-muted small">Visível apenas para Admin Valoriza. Acompanhe retenção e cancelamentos de empresas clientes.</p>
+
+@* Cards de métricas *@
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card p-3" style="border-left:4px solid #28a745;">
+            <div class="text-muted small">Clientes ativos</div>
+            <div class="fs-3 fw-bold">@ViewBag.Ativas</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3" style="border-left:4px solid #dc3545;">
+            <div class="text-muted small">Churn (total)</div>
+            <div class="fs-3 fw-bold">@ViewBag.Churned</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3" style="border-left:4px solid #fd7e14;">
+            <div class="text-muted small">Taxa churn no mês</div>
+            <div class="fs-3 fw-bold">@ViewBag.TaxaChurnMes%</div>
+            <div class="small text-muted">@ViewBag.ChurnMes cancelamento(s)</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3" style="border-left:4px solid #6f42c1;">
+            <div class="text-muted small">MRR estimado</div>
+            <div class="fs-4 fw-bold">@(((decimal)ViewBag.Mrr).ToString("C"))</div>
+            <div class="small text-muted">Perdido no mês: @(((decimal)ViewBag.ReceitaPerdidaMes).ToString("C"))</div>
+        </div>
+    </div>
+</div>
+
+@* Filtros *@
+<form method="get" class="card p-3 mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label small">Buscar</label>
+            <input type="text" name="busca" class="form-control form-control-sm"
+                   value="@ViewBag.FiltroBusca" placeholder="Nome ou CNPJ" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small">Status assinatura</label>
+            <select name="status" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                @foreach (var s in new[] { "Ativa", "Inadimplente", "Churn" })
+                {
+                    if (ViewBag.FiltroStatus as string == s)
+                    {
+                        <option value="@s" selected>@s</option>
+                    }
+                    else
+                    {
+                        <option value="@s">@s</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-dark btn-sm w-100">Filtrar</button>
+        </div>
+    </div>
+</form>
+
+@* Tabela *@
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Empresa</th>
+                    <th>Plano</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th>Churn em</th>
+                    <th>Motivo</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model == null || !Model.Any())
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Nenhuma empresa.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var e in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@(e.NomeFantasia ?? e.RazaoSocial)</strong>
+                            <div class="small text-muted">@e.Cnpj</div>
+                        </td>
+                        <td>@e.Plano · @e.CicloCobranca</td>
+                        <td>@e.ValorAssinatura.ToString("C")</td>
+                        <td>
+                            @if (e.StatusAssinatura == "Ativa")
+                            {
+                                <span class="badge bg-success">Ativa</span>
+                            }
+                            else if (e.StatusAssinatura == "Inadimplente")
+                            {
+                                <span class="badge bg-warning text-dark">Inadimplente</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Churn</span>
+                            }
+                        </td>
+                        <td>@(e.DataChurn?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td class="small">@(e.MotivoChurn ?? "—")</td>
+                        <td class="text-nowrap">
+                            @if (e.StatusAssinatura != "Churn")
+                            {
+                                <a asp-action="Registrar" asp-route-id="@e.Id"
+                                   class="btn btn-sm btn-outline-danger">Registrar churn</a>
+                                @if (e.StatusAssinatura != "Inadimplente")
+                                {
+                                    <form asp-action="MarcarInadimplente" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@e.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">Inadimplente</button>
+                                    </form>
+                                }
+                            }
+                            else
+                            {
+                                <form asp-action="Reativar" method="post" class="d-inline"
+                                      onsubmit="return confirm('Reativar esta empresa?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@e.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-success">Reativar</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

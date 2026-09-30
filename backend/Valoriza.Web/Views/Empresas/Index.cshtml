@@ -1,0 +1,82 @@
+@*  Lista de empresas clientes acessado somente por AdminValoriza
+    Colunas: Id, razão social, fantasia, CNPJ, setor, plano, situação. *@
+
+@model List<Valoriza.API.Models.Empresa>
+@{
+    ViewData["Title"] = "Empresas";
+    var nomes = ViewBag.Sugestoes as List<string> ?? new();
+}
+
+<h2 class="h4 mb-3">Empresas clientes</h2>
+
+<form method="get" class="card p-3 mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-6">
+            <label class="form-label small">Nome / CNPJ</label>
+            <input type="text" name="nome" class="form-control form-control-sm"
+                   value="@ViewBag.FiltroNome" list="listaEmpresas"
+                   placeholder="Digite para sugerir..." autocomplete="off" />
+            <datalist id="listaEmpresas">
+                @foreach (var n in nomes)
+                {
+                    <option value="@n"></option>
+                }
+            </datalist>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">Situação</label>
+            <select name="situacao" class="form-select form-select-sm">
+                <option value="">Todas</option>
+                <option value="Ativa">Ativa</option>
+                <option value="Inativa">Inativa</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-dark btn-sm w-100">Filtrar</button>
+        </div>
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Nome fantasia</th>
+                    <th>Razão social</th>
+                    <th>CNPJ</th>
+                    <th>Plano</th>
+                    <th>Valor</th>
+                    <th>Ativa</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model == null || !Model.Any())
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Nenhuma empresa.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var e in Model)
+                {
+                    <tr>
+                        <td>@(e.NomeFantasia ?? "—")</td>
+                        <td>@e.RazaoSocial</td>
+                        <td>@e.Cnpj</td>
+                        <td>@e.Plano</td>
+                        <td>@e.ValorAssinatura.ToString("C")</td>
+                        <td>@(e.Ativa ? "Sim" : "Não")</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@e.Id"
+                               class="btn btn-sm btn-outline-secondary">Editar</a>
+                        </td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

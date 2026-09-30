@@ -1,65 +1,224 @@
+@*  Dashboard – representatividade, carreira, equidade salarial, adesão *@
+@using Valoriza.API.Models
 @{
     ViewData["Title"] = "Dashboard";
+    var isAdminValoriza = (bool)(ViewBag.IsAdminValoriza ?? false);
+    var isAdminEmpresa  = (bool)(ViewBag.IsAdminEmpresa ?? false);
+    var tipoCard        = ViewBag.TipoCardPessoas as string ?? "";
+    var indicador       = ViewBag.Indicador as IndicadorDiversidade;
+
+    string Money(decimal v) => v <= 0 ? "—" : v.ToString("C");
+    string Razao(decimal r) => r <= 0 ? "—" : r.ToString("0.00");
 }
 
 <div class="p-4 mb-4 bg-white rounded-3">
-    <h1 class="h3 mb-1">Painel Valoriza</h1>
-    <p class="text-muted mb-0">Gestão de Diversidade, Equidade e Inclusão Organizacional</p>
+    <h1 class="h3 mb-1">Olá, @ViewBag.NomeUsuario</h1>
+    <p class="text-muted mb-0">Painel de Diversidade, Equidade e Inclusão</p>
 </div>
 
+@* Resumo rápido *@
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <div class="card stat-card p-3">
+        <div class="card p-3" style="border-left:4px solid #1a1a2e;">
             <div class="text-muted small">Denúncias</div>
-            <div class="fs-3 fw-bold">@ViewBag.TotalDenuncias</div>
+            <div class="fs-3 fw-bold">@ViewBag.DenunciasTotalLive</div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card p-3">
-            <div class="text-muted small">Abertas</div>
-            <div class="fs-3 fw-bold text-warning">@ViewBag.DenunciasAbertas</div>
+        <div class="card p-3" style="border-left:4px solid #28a745;">
+            <div class="text-muted small">Resolvidas</div>
+            <div class="fs-3 fw-bold">@ViewBag.DenunciasResolvidasLive</div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card p-3">
+        <div class="card p-3" style="border-left:4px solid #17a2b8;">
             <div class="text-muted small">Trilhas ativas</div>
             <div class="fs-3 fw-bold">@ViewBag.TotalTrilhas</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card stat-card p-3">
-            <div class="text-muted small">Usuários ativos</div>
-            <div class="fs-3 fw-bold">@ViewBag.TotalUsuarios</div>
+    @if (tipoCard == "AdminValoriza")
+    {
+        <div class="col-md-3">
+            <div class="card p-3" style="border-left:4px solid #6f42c1;">
+                <div class="text-muted small">Empresas clientes ativas</div>
+                <div class="fs-3 fw-bold">@ViewBag.EmpresasClientesAtivas</div>
+            </div>
+        </div>
+    }
+    else if (tipoCard == "AdminEmpresa")
+    {
+        <div class="col-md-3">
+            <div class="card p-3" style="border-left:4px solid #6f42c1;">
+                <div class="text-muted small">Funcionários ativos</div>
+                <div class="fs-3 fw-bold">@ViewBag.FuncionariosAtivosEmpresa</div>
+            </div>
+        </div>
+    }
+</div>
+
+@* REPRESENTATIVIDADE *@
+<div class="card p-4 mb-4">
+    <h2 class="h5 mb-3">Representatividade</h2>
+    <p class="small text-muted">Base: @ViewBag.RepTotal colaboradores ativos da empresa</p>
+    <div class="row g-3 text-center">
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.RepPctNegros%</div>
+                <div class="small text-muted">Negros/pardos (@ViewBag.RepNegros)</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.RepPctIndigenas%</div>
+                <div class="small text-muted">Indígenas (@ViewBag.RepIndigenas)</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.RepPctMulheres%</div>
+                <div class="small text-muted">Mulheres (@ViewBag.RepMulheres)</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.RepTotal</div>
+                <div class="small text-muted">Total ativos</div>
+            </div>
         </div>
     </div>
 </div>
 
+@* PROGRESSÃO DE CARREIRA *@
+<div class="card p-4 mb-4">
+    <h2 class="h5 mb-3">Progressão de carreira</h2>
+    <p class="small text-muted">
+        Liderança identificada por cargo (diretor, gerente, coordenador, supervisor, líder…).
+    </p>
+    <div class="row g-3 text-center">
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.CarreiraTotalLideranca</div>
+                <div class="small text-muted">Cargos de liderança</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.CarreiraPctNegrosNaLideranca%</div>
+                <div class="small text-muted">Negros na liderança (@ViewBag.CarreiraNegrosLideranca)</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.CarreiraPctMulheresNaLideranca%</div>
+                <div class="small text-muted">Mulheres na liderança (@ViewBag.CarreiraMulheresLideranca)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* EQUIDADE SALARIAL *@
+<div class="card p-4 mb-4">
+    <h2 class="h5 mb-3">Equidade salarial</h2>
+    <p class="small text-muted">
+        Com base em @ViewBag.EqComSalario colaboradores com salário informado.
+        Razão 1,00 = paridade.
+    </p>
+    <div class="row g-3 text-center">
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-5 fw-bold">@Money((decimal)ViewBag.EqMediaGeral)</div>
+                <div class="small text-muted">Média geral</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-5 fw-bold">@Money((decimal)ViewBag.EqMediaNegros)</div>
+                <div class="small text-muted">Média negros/pardos</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-5 fw-bold">@Money((decimal)ViewBag.EqMediaMulheres)</div>
+                <div class="small text-muted">Média mulheres</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-5 fw-bold">@Razao((decimal)ViewBag.EqRazaoNegrosBrancos)</div>
+                <div class="small text-muted">Razão negros/brancos</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-5 fw-bold">@Razao((decimal)ViewBag.EqRazaoMulheresHomens)</div>
+                <div class="small text-muted">Razão mulheres/homens</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ADESÃO A PROGRAMAS DE INCLUSÃO *@
+<div class="card p-4 mb-4">
+    <h2 class="h5 mb-3">Adesão a programas de inclusão</h2>
+    <p class="small text-muted">Trilhas de treinamento DEI e progresso dos colaboradores.</p>
+    <div class="row g-3 text-center">
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.AdesaoTrilhasAtivas</div>
+                <div class="small text-muted">Trilhas ativas</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.AdesaoPctEngajamento%</div>
+                <div class="small text-muted">Colaboradores engajados (@ViewBag.AdesaoUsuariosEngajados)</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.AdesaoConcluidas</div>
+                <div class="small text-muted">Trilhas concluídas</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="border rounded p-3">
+                <div class="fs-4 fw-bold">@ViewBag.AdesaoMediaPercentual%</div>
+                <div class="small text-muted">Progresso médio</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Indicador mensal cadastrado (se houver) *@
+@if (indicador != null)
+{
+    <div class="card p-4 mb-4">
+        <h2 class="h5 mb-3">Indicador cadastrado — @indicador.Mes/@indicador.Ano</h2>
+        <div class="row g-2 text-center small">
+            <div class="col"><strong>@indicador.PercentualAdesaoTreinamentos%</strong><br/>Adesão (cadastro)</div>
+            <div class="col"><strong>@ViewBag.DenunciasResolvidasLive / @ViewBag.DenunciasTotalLive</strong><br/>Denúncias (ao vivo)</div>
+        </div>
+    </div>
+}
+
+@* Atalhos *@
 <div class="row g-3">
     <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Canal de Denúncias</h5>
-                <p class="card-text text-muted">Acompanhe e gerencie denúncias de forma confidencial.</p>
-                <a asp-controller="Denuncias" asp-action="Index" class="btn btn-dark btn-sm">Abrir</a>
-            </div>
-        </div>
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Treinamentos</h5>
+            <a asp-controller="Treinamentos" asp-action="Index" class="btn btn-dark btn-sm">Abrir</a>
+        </div></div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Treinamentos</h5>
-                <p class="card-text text-muted">Trilhas de capacitação em DEI e relações étnico-raciais.</p>
-                <a asp-controller="Treinamentos" asp-action="Index" class="btn btn-dark btn-sm">Abrir</a>
-            </div>
-        </div>
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Denúncias</h5>
+            <a asp-controller="Denuncias" asp-action="Index" class="btn btn-dark btn-sm">Abrir</a>
+        </div></div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">API / Swagger</h5>
-                <p class="card-text text-muted">Documentação e testes dos endpoints REST.</p>
-                <span class="text-muted small">Rode a API e acesse /swagger</span>
-            </div>
-        </div>
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Indicadores</h5>
+            <a asp-controller="Indicadores" asp-action="Index" class="btn btn-dark btn-sm">Abrir</a>
+        </div></div>
     </div>
 </div>
